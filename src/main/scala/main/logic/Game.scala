@@ -18,8 +18,10 @@ class Game {
 }
 
 object Game {
-  var current: Game = _
+  private var current: Game = _
+  def Current: Game = current
   def init(): Game = {
+    require(current == null)
     current = new Game()
     current
   }

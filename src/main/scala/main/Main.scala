@@ -18,8 +18,6 @@ object Main {
 
     val game = Game.init()
     Display.init(game)
-
-    //Display.moveTest()
   }
 
 }
