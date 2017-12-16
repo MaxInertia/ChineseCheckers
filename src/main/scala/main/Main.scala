@@ -1,12 +1,8 @@
 package main
 
-import com.outr.pixijs.PIXI.{Sprite, Texture}
-import org.scalajs.dom.{console, document, window}
+import org.scalajs.dom.console
+import scala.scalajs.js.annotation.{JSExportTopLevel, JSExport}
 
-import scala.scalajs.js.annotation.{JSExportStatic, JSExportTopLevel, ScalaJSDefined}
-import scala.scalajs.js
-import scala.scalajs.js.annotation._
-import com.outr.pixijs._
 import main.logic.Game
 import main.ui.Display
 
@@ -23,7 +19,7 @@ object Main {
     val game = Game.init()
     Display.init(game)
 
-    Display.moveTest()
+    //Display.moveTest()
   }
 
 }

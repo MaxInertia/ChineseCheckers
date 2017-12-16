@@ -45,25 +45,18 @@ object Display {
     document.body.appendChild(renderer.view)
     stage = new PIXI.Container()
 
-
     // 2. Board
     val board = new PIXI.Sprite(PIXI.Texture.fromImage(R + "board.png"))
     board.scale.set(0.25, 0.25)
     stage.addChild(board)
 
     // 3. Pieces
-    var pc = 32
-    for(color <- Colors) {
-      val texture = PIXI.Texture.fromImage(R + color + Size)
-      var pieces: Array[Sprite] = Array()
-      for (i <- 1 to 6) {
-        var piece = makePiece(texture, (i + 1) * 34 + 150, pc)
-        pieces = pieces ++: Array(piece)
-        stage.addChild(piece)
-      }
-      game.pieces.+(color -> pieces)
-      pc += 34
-    }
+    makePlayerPieces("red", game)
+    makePlayerPieces("green", game)
+    makePlayerPieces("blue", game)
+    makePlayerPieces("yellow", game)
+    makePlayerPieces("purple", game)
+    makePlayerPieces("black", game)
 
     // 4. Start animation loop
     def animate(): Unit = {
@@ -73,7 +66,56 @@ object Display {
     animate()
   }
 
-  def makePiece(texture: Texture, xPos: Int, yPos: Int): PIXI.Sprite = {
+  def makePlayerPieces(color: String, game: Game): Unit = {
+    val texture = PIXI.Texture.fromImage(R + color + Size)
+    var pieces: Array[Sprite] = Array()
+    // For position of top & bottom pieces
+    val tbPositions = Array( // (dx, dy)
+      (-3, 5), (-1, 5), (1, 5), (3, 5),
+      (-2, 6), (0, 6), (2, 6),
+      (1, 7), (-1, 7),
+      (0, 8))
+    // For position of pieces on {top | bottom} + {left | right}
+    val lrPositons = Array( // (dy, dx)
+      (4, 12), (4, 10), (4, 8), (4, 6),
+      (3, 11), (3, 9), (3, 7),
+      (2, 10), (2, 8),
+      (1, 9))
+
+    for (i <- 0 until 10) {
+      var x = Board.Width/2
+      var y = Board.Height/2
+      color match {
+        case "black" => // Top
+          x += Board.dx * tbPositions(i)._1
+          y += Board.dy * tbPositions(i)._2
+        case "green" => // Bottom
+          x += Board.dx * tbPositions(i)._1
+          y -= Board.dy * tbPositions(i)._2
+        case "blue" => // Top-Left
+          x -= Board.dx * lrPositons(i)._2
+          y -= Board.dy * lrPositons(i)._1
+        case "yellow" => // Top-Left
+          x -= Board.dx * lrPositons(i)._2
+          y += Board.dy * lrPositons(i)._1
+        case "purple" => // Top-Left
+          x += Board.dx * lrPositons(i)._2
+          y += Board.dy * lrPositons(i)._1
+        case "red" => // Top-Left
+          x += Board.dx * lrPositons(i)._2
+          y -= Board.dy * lrPositons(i)._1
+        case default => dom.console.log("Not implemented: Color: "+color)
+      }
+
+      var piece = makePiece(texture, x, y, i)
+      pieces = pieces ++: Array(piece)
+      stage.addChild(piece)
+    }
+
+    game.pieces.+(color -> pieces)
+  }
+
+  def makePiece(texture: Texture, xPos: Double, yPos: Double, i: Int): PIXI.Sprite = {
     val sprite = new PIXI.Sprite(texture) {
       anchor.x = 0.5
       anchor.y = 0.5
@@ -110,28 +152,30 @@ object Display {
     sprite
   }
 
-  def moveTest(): Unit = {
-    val color = "black"
-    val texture = PIXI.Texture.fromImage(R + color + Size)
-    val ref1 = new PIXI.Sprite(texture) {
-      anchor.x = 0.5
-      anchor.y = 0.5
-      scale.x = 0.9
-      scale.y = 0.9
+  def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
+    require(distance == 1 || distance == 2)
+    direction match {
+      case 0 => // Right (+, 0)
+        sprite.x += Board.dx * 2 * distance
+
+      case 1 => // Down-Right (+, +)
+        sprite.x += Board.dx * distance
+        sprite.y += Board.dy * distance
+
+      case 2 => // Down-Left (-, +)
+        sprite.x -= Board.dx * distance
+        sprite.y += Board.dy * distance
+
+      case 3 => // Left  (-, 0)
+        sprite.x -= Board.dx * 2 * distance
+
+      case 4 => // Up-Left (-, -)
+        sprite.x -= Board.dx * distance
+        sprite.y -= Board.dy * distance
+
+      case 5 => // Up-Right (+, -)
+        sprite.x += Board.dx * distance
+        sprite.y -= Board.dy * distance
     }
-
-    ref1.interactive = true
-    ref1.position.set(Board.Width/2, Board.Height/2)//628)
-
-    val dx = 18.2
-    val dy = 31.2
-
-    ref1.on("mousedown", () => {
-      dom.console.log("on ref movement dx: "+dx+", dy: "+dy)
-      ref1.x += Board.dx
-      ref1.y += Board.dy
-    })
-
-    stage.addChild(ref1)
   }
 }
