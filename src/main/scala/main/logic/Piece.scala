@@ -12,9 +12,13 @@ class Piece(sprite: PIXI.Sprite, color: String) {
   private var position: Position = _
 
   def Color: String = color
-  def Position: Position = position
-  def setPosition(x: Int, y: Int): Unit = {
+  def Pos: Position = position
+  def setPosition(x: Int, y: Int): Boolean = {
+    if(!Position.isValid(x, y)) return false
+    val oldPosition = position
     position = new Position(x, y)
+    if(oldPosition != null) Game.Current.registerMove(oldPosition, position)
+    true
   }
 }
 
@@ -97,18 +101,28 @@ object Piece {
           moveInvalid() // Attempted to move distance > 2
 
         } else {
-          val (correctedX, correctedY) = Display.focusCoords(finalPosition.x, finalPosition.y)
+          val (correctedX, correctedY, bx, by) = Display.focusCoords(finalPosition.x, finalPosition.y)
           if (math.abs(ix - correctedX) < 0.9 * Display.BoardInfo.dx) {
+            //dom.console.log("Attempted vertical move")
             moveInvalid() // Attempted to move directly up or down
 
           } else {
             val xyRatio = math.abs(iy - correctedY) / math.abs(ix - correctedX)
-            dom.console.log(s"Ratio (dx/dy) = $xyRatio")
+            //dom.console.log(s"Ratio (dx/dy) = $xyRatio")
             if (xyRatio > 0 && xyRatio < 1.5) {
+              //dom.console.log("Attempted 'L'")
               moveInvalid() // Attempted to move in 'L' shape
 
             } else {
-              sprite.position.set(correctedX, correctedY)
+              val ox = piece.position.X
+              val oy = piece.position.Y
+              val moveOk = piece.setPosition(bx, by)
+              if(moveOk) {
+                sprite.position.set(correctedX, correctedY)
+              }  else {
+                //dom.console.log("Attempted moving outside board")
+                moveInvalid() // Attempted moving outside board
+              }
             }
           }
         }

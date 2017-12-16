@@ -24,11 +24,11 @@ object Display {
 
   // View-specific details of the displayed board.
   object BoardInfo {
-    private val width = 2000
-    private val height = 2294
-    val scale = 0.25
-    def Width: Double = width * scale
-    def Height: Double = height * scale
+    val iwidth = 2000 // Image width
+    val iheight = 2294 // Image height
+    val scale = 0.3
+    def Width: Double = iwidth * scale
+    def Height: Double = iheight * scale
     // Horizontal distance between neighboring board positions
     def dx: Double = 72.8 * scale
     // Vertical distance between neighboring board positions
@@ -52,8 +52,17 @@ object Display {
     stage = new PIXI.Container()
 
     // 2. Board
-    val board = new PIXI.Sprite(PIXI.Texture.fromImage(R + "board.png"))
-    board.scale.set(BoardInfo.scale, BoardInfo.scale)
+    val board = new PIXI.Sprite(PIXI.Texture.fromImage(R + "board.png")) {
+      anchor.x = 0.5
+      anchor.y = 0.5
+      scale.x = BoardInfo.scale
+      scale.y = BoardInfo.scale
+      x = BoardInfo.Width/2
+      y = BoardInfo.Height/2
+    }
+    dom.console.log(s"Piv: ${board.pivot.x} ${board.pivot.y}")
+    dom.console.log(s"Pos: ${board.position.x} ${board.position.y}")
+    //board.rotation = math.Pi/3
     stage.addChild(board)
 
     // 3. Pieces
@@ -142,7 +151,7 @@ object Display {
     }
   }
 
-  def focusCoords(displayX: Double, displayY: Double): (Double, Double) = {
+  def focusCoords(displayX: Double, displayY: Double): (Double, Double, Int, Int) = {
     // Distance from board center
     val x2c = displayX - BoardInfo.Width/2
     val y2c = displayY - BoardInfo.Height/2
@@ -164,10 +173,10 @@ object Display {
       boardX = math.floor(boardX)
     }
 
-    dom.console.log(s"Attempting to move to ($boardX, $boardY)")
+    //dom.console.log(s"Attempting to move to ($boardX, $boardY)")
     val x = BoardInfo.Width/2 + boardX * BoardInfo.dx
     val y = BoardInfo.Height/2 + boardY * BoardInfo.dy
-    (x, y)
+    (x, y, boardX.toInt, boardY.toInt)
   }
 
 }

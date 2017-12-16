@@ -7,7 +7,7 @@ import org.scalajs.dom
   */
 class Position(x: Int, y: Int) {
   if(!Position.isValid(x, y))
-    dom.console.log(s"Invalid board position created: ($x, $y)")
+    dom.console.log(s"WHOOPS! Invalid board position created: ($x, $y)")
 
   def X: Int = x
   def Y: Int = y
@@ -18,13 +18,13 @@ object Position {
     val x: Int = math.abs(xPos)
     val y: Int = math.abs(yPos)
 
-    // Pieces not in a spawn location
-    if( x <= 4 && y <= 4 ) {
+    // Pieces not in a spawn location + a few in spawn location
+    if( x <= 8 && y <= 4 ) {
       if (x % 2 == y % 2) return true
       else return false
     }
 
-    // Pieces in a spawn location
+    // Exclusively pieces in a spawn location
     for(p <- Board.tbPositions)
       if(x == math.abs(p._1) && y == math.abs(p._2)) return true
     for(p <- Board.lrPositions)
