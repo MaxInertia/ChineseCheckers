@@ -29,7 +29,9 @@ object Display {
     val scale = 0.25
     def Width: Double = width * scale
     def Height: Double = height * scale
+    // Horizontal distance between neighboring board positions
     def dx: Double = 72.8 * scale
+    // Vertical distance between neighboring board positions
     def dy: Double = 124.8 * scale
   }
 
@@ -40,8 +42,8 @@ object Display {
   def init(game: Game): Unit = {
     // 1. Renderer and Stage
     renderer = PIXI.autoDetectRenderer(new RendererOptions {
-      height = 573
-      width = 500
+      height = BoardInfo.Height.toInt
+      width = BoardInfo.Width.toInt
       antialias = true
       resolution = 1.0
       backgroundColor = 0xffffff
@@ -51,7 +53,7 @@ object Display {
 
     // 2. Board
     val board = new PIXI.Sprite(PIXI.Texture.fromImage(R + "board.png"))
-    board.scale.set(0.25, 0.25)
+    board.scale.set(BoardInfo.scale, BoardInfo.scale)
     stage.addChild(board)
 
     // 3. Pieces
@@ -101,9 +103,7 @@ object Display {
           dom.console.log("Not implemented: Color: "+color)
       }
 
-      // A little awkward how board pieces (not only the sprites) are created
-      // in the ui package. However, this prevents the sprite of a Piece from
-      // being changed at a later time. Possibly desirable?
+      // TODO: Separate ui & game logic (No PIXI in logic package)
       val (newPiece, sprite) = Piece.create(texture, color, xBoard, yBoard)
       pieces = pieces ++: Array(newPiece)
       stage.addChild(sprite)
@@ -111,7 +111,6 @@ object Display {
 
     game.pieces.+(color -> pieces)
   }
-
 
   def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
     if(distance == 1 || distance == 2)
@@ -142,4 +141,33 @@ object Display {
         sprite.y -= BoardInfo.dy * distance
     }
   }
+
+  def focusCoords(displayX: Double, displayY: Double): (Double, Double) = {
+    // Distance from board center
+    val x2c = displayX - BoardInfo.Width/2
+    val y2c = displayY - BoardInfo.Height/2
+
+    // Determine board position closest to given coordinates
+    // y-coord
+    var boardY = y2c/BoardInfo.dy
+    if(math.abs(boardY - boardY.toInt) <= 0.5) {
+      boardY = boardY.toInt
+    } else if(math.abs(boardY - boardY.toInt) > 0.5) {
+      if(boardY > 0) boardY = boardY.toInt + 1
+      else boardY = boardY.toInt - 1
+    }
+    // x-coord
+    var boardX = x2c/BoardInfo.dx
+    if(math.abs(math.ceil(boardX))%2 == math.abs(boardY)%2) {
+      boardX = math.ceil(boardX)
+    } else {
+      boardX = math.floor(boardX)
+    }
+
+    dom.console.log(s"Attempting to move to ($boardX, $boardY)")
+    val x = BoardInfo.Width/2 + boardX * BoardInfo.dx
+    val y = BoardInfo.Height/2 + boardY * BoardInfo.dy
+    (x, y)
+  }
+
 }

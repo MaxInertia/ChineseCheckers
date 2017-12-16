@@ -35,12 +35,11 @@ object Piece {
     sprite.interactive = true
     sprite.buttonMode = true
 
-    val newPiece = new Piece(sprite, color)
-    newPiece.setPosition(xPos, yPos)
+    val piece = new Piece(sprite, color)
+    piece.setPosition(xPos, yPos)
 
     // Action performed when mouse over sprite
     val onOver = () => {
-      dom.console.log("isOver "+color)
       sprite.scale.x = 1.1
       sprite.scale.y = 1.1
     }
@@ -65,7 +64,6 @@ object Piece {
     sprite.on("mousedown", onDown)
     sprite.on("mouseup", onUp)
 
-
     var data: PIXI.interaction.InteractionData = null
     var dragging: Boolean = false
     var ix: Double = 0
@@ -76,9 +74,6 @@ object Piece {
       //TODO: Only allow dragging on the players turn
       ix = sprite.x
       iy = sprite.y
-      // store a reference to the data
-      // the reason for this is because of multitouch
-      // we want to track the movement of this particular touch
       data = event.data
       dragging = true
     }
@@ -86,20 +81,43 @@ object Piece {
     val onDragEnd = () => {
       if(dragging) {
         var finalPosition = data.getLocalPosition(Display.stage)
-        // Check if final position is valid
-        val deltaX = ix - finalPosition.x
-        val deltaY = iy - finalPosition.y
-        if (math.abs(deltaX) < BoardInfo.dx * 2.5 && math.abs(deltaY) < BoardInfo.dy * 2.5) {
-          dom.console.log("Valid move!")
-        } else {
-          dom.console.log("Invalid move!")
+
+        val moveInvalid = () => {
+          // Restore predrag position
+          dom.console.log("Invalid move attempted!")
           sprite.x = ix
           sprite.y = iy
         }
 
+        // Check if final position is valid.
+        // Does not check move against other piece locations
+        val deltaX = ix - finalPosition.x
+        val deltaY = iy - finalPosition.y
+        if (math.abs(deltaX) > BoardInfo.dx * 2 * 2.5 || math.abs(deltaY) > BoardInfo.dy * 2.5) {
+          moveInvalid() // Attempted to move distance > 2
+
+        } else {
+          val (correctedX, correctedY) = Display.focusCoords(finalPosition.x, finalPosition.y)
+          if (math.abs(ix - correctedX) < 0.9 * Display.BoardInfo.dx) {
+            moveInvalid() // Attempted to move directly up or down
+
+          } else {
+            val xyRatio = math.abs(iy - correctedY) / math.abs(ix - correctedX)
+            dom.console.log(s"Ratio (dx/dy) = $xyRatio")
+            if (xyRatio > 0 && xyRatio < 1.5) {
+              moveInvalid() // Attempted to move in 'L' shape
+
+            } else {
+              sprite.position.set(correctedX, correctedY)
+            }
+          }
+        }
+
+        // TODO: Confirm pieces not blocking and that pieces exist in jump moves
+        // TODO: Prevent pieces from being moved outside the board
+
         dragging = false
-        // set the interaction data to null
-        data = null
+        data = null // set the interaction data to null
       }
     }
 
@@ -116,6 +134,6 @@ object Piece {
     //.on("pointerupoutside", onDragEnd)
     .on("pointermove", onDragMove)
 
-    (newPiece, sprite)
+    (piece, sprite)
   }
 }
