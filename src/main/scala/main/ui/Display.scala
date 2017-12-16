@@ -107,7 +107,7 @@ object Display {
         case default => dom.console.log("Not implemented: Color: "+color)
       }
 
-      var piece = makePiece(texture, x, y, i)
+      var piece = makePiece(texture, x, y)
       pieces = pieces ++: Array(piece)
       stage.addChild(piece)
     }
@@ -115,7 +115,7 @@ object Display {
     game.pieces.+(color -> pieces)
   }
 
-  def makePiece(texture: Texture, xPos: Double, yPos: Double, i: Int): PIXI.Sprite = {
+  def makePiece(texture: Texture, xPos: Double, yPos: Double): PIXI.Sprite = {
     val sprite = new PIXI.Sprite(texture) {
       anchor.x = 0.5
       anchor.y = 0.5
