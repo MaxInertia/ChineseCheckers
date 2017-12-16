@@ -113,6 +113,7 @@ object Piece {
     sprite.on("pointerdown", onDragStart)
       .on("pointerup", onDragEnd)
       .on("pointermove", onDragMove)
+      .on("pointermoveout", onDragEnd)
 
     (piece, sprite)
   }
