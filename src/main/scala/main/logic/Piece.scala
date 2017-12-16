@@ -86,49 +86,16 @@ object Piece {
       if(dragging) {
         var finalPosition = data.getLocalPosition(Display.stage)
 
-        val moveInvalid = () => {
+        // Check if final position is valid.
+        val (correctedX, correctedY, ok) = Game.Current.moveValid(piece, ix, iy, finalPosition.x, finalPosition.y)
+        if(ok) {
+          sprite.position.set(correctedX, correctedY)
+        } else {
           // Restore predrag position
           dom.console.log("Invalid move attempted!")
           sprite.x = ix
           sprite.y = iy
         }
-
-        // Check if final position is valid.
-        // Does not check move against other piece locations
-        val deltaX = ix - finalPosition.x
-        val deltaY = iy - finalPosition.y
-        if (math.abs(deltaX) > BoardInfo.dx * 2 * 2.5 || math.abs(deltaY) > BoardInfo.dy * 2.5) {
-          moveInvalid() // Attempted to move distance > 2
-
-        } else {
-          val (correctedX, correctedY, bx, by) = Display.focusCoords(finalPosition.x, finalPosition.y)
-          if (math.abs(ix - correctedX) < 0.9 * Display.BoardInfo.dx) {
-            //dom.console.log("Attempted vertical move")
-            moveInvalid() // Attempted to move directly up or down
-
-          } else {
-            val xyRatio = math.abs(iy - correctedY) / math.abs(ix - correctedX)
-            //dom.console.log(s"Ratio (dx/dy) = $xyRatio")
-            if (xyRatio > 0 && xyRatio < 1.5) {
-              //dom.console.log("Attempted 'L'")
-              moveInvalid() // Attempted to move in 'L' shape
-
-            } else {
-              val ox = piece.position.X
-              val oy = piece.position.Y
-              val moveOk = piece.setPosition(bx, by)
-              if(moveOk) {
-                sprite.position.set(correctedX, correctedY)
-              }  else {
-                //dom.console.log("Attempted moving outside board")
-                moveInvalid() // Attempted moving outside board
-              }
-            }
-          }
-        }
-
-        // TODO: Confirm pieces not blocking and that pieces exist in jump moves
-        // TODO: Prevent pieces from being moved outside the board
 
         dragging = false
         data = null // set the interaction data to null
@@ -144,9 +111,8 @@ object Piece {
     }
 
     sprite.on("pointerdown", onDragStart)
-    .on("pointerup", onDragEnd)
-    //.on("pointerupoutside", onDragEnd)
-    .on("pointermove", onDragMove)
+      .on("pointerup", onDragEnd)
+      .on("pointermove", onDragMove)
 
     (piece, sprite)
   }

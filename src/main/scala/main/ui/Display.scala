@@ -13,7 +13,7 @@ object Display {
 
   // Resource constants
   val R: String = "images/"
-  val Colors: Array[String] = Array( //TODO: Use enum?
+  val Colors: Array[String] = Array(
     "blue",
     "green",
     "yellow",
