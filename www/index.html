@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <title>Chinese Checkers</title>
 
-    <!-- Use style with full window canvas -->
-    <!--<style>* {padding: 0; margin: 0}</style>-->
-
     <!-- Development Imports -->
-    <!--<script src="lib/scalajs-pixijs-fastopt.js"></script>-->
     <script src="lib/pixi.js"></script>
     <script src="../target/scala-2.12/chinesecheckers-fastopt.js"></script>
 
-    <!-- Production Imports -->
-    <!--<script src="lib/scalajs-pixijs-opt.js"></script>
-    <script src="lib/pixi.min.js"></script>-->
-
+    <!-- Production Imports --><!--
+    <script src="lib/pixi.min.js"></script>
+    <script src="../target/scala-2.12/chinesecheckers-opt.js"></script>
+    -->
 </head>
 <body>
 
@@ -25,10 +21,10 @@
         type = "canvas"
     }
     PIXI.utils.sayHello(type);
-
     IFMain.makeGame();
 </script>
 
 <!--<div>Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>-->
+
 </body>
 </html>
