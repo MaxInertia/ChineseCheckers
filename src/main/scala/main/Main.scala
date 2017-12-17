@@ -4,18 +4,19 @@ import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import main.logic.{Game, Piece}
-import main.ui.Display
+import main.ui.{Display, Position}
+import main.ui.Display.{Sprites, makePlayerPieces}
 import org.scalajs.dom
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
-@JSExportTopLevel("IFMain")
+@JSExportTopLevel("ChCheckers")
 object Main {
 
   @JSExport
   def makeGame(): Unit = {
-    console.log("IFMain.makeGame called")
+    console.log("ChCheckers.makeGame called")
     val game = Game.init()
     Display.init(game)
   }
@@ -37,37 +38,53 @@ object Main {
       case 5 =>
         color = "yellow"
     }
-    for(p <- Game.Current.pc) {
-      if(p.Color == color) {
-        p.setVisibility(!p.Visible())
+
+    for(i <- 0 to 59) {
+      val (p, found) = Game.Current.board.getPiece(i)
+      if(found) {
+        if(p.Color == color) Sprites.changeVisibility(i)
+      } else {
+        dom.console.log(s"Piece #$i was not found!")
       }
     }
   }
 
+  // Undoes the previous move. Can be called until all
+  // pieces are restored to their original positions.
+  // Returns true when a move is undone.
   @JSExport
-  def undo(): Unit = {
+  def undo(): Boolean = {
     val len = Game.Current.history.length
     if(len == 0) {
       dom.console.log("No move to undo")
-      return
+      return false
     }
     val lastMove = Game.Current.history(len-1)
-    val ix = lastMove.initialPosition.X
-    val iy = lastMove.initialPosition.Y
-    val fx = lastMove.finalPosition.X
-    val fy = lastMove.finalPosition.Y
-    dom.console.log(s"Undo: ($fx, $fy) -> ($ix, $iy)")
-    Game.Current.history = Game.Current.history.dropRight(1)
-    for(p <- Game.Current.pc) {
-      if(p.Pos.X == fx && p.Pos.Y == fy) {
-        p.setPosition(ix, iy, add2History = false)
-        p.Sprite.position.set(
-          Display.BoardInfo.Width/2 + Display.BoardInfo.dx*ix,
-          Display.BoardInfo.Height/2 + Display.BoardInfo.dy*iy
-        )
-        dom.console.log("Undo performed")
-      }
+    val ix = lastMove.initialTile.X
+    val iy = lastMove.initialTile.Y
+    val fx = lastMove.finalTile.X
+    val fy = lastMove.finalTile.Y
+
+    val (p, found) = Game.Current.board.getPieceAt(fx, fy)
+    if(!found) {
+      dom.console.log("Undo failed!")
+      return false
     }
+
+    Game.Current.history = Game.Current.history.dropRight(1)
+    p.setPosition(ix, iy, remember = false)
+    val (px, py) = Position.of(ix, iy)
+    Sprites.get(p.ID).position.set(px, py)
+    dom.console.log(s"Undo: ($fx, $fy) -> ($ix, $iy)")
+    true
   }
 
+  // Restores game to it's initial state.
+  @JSExport
+  def reset(): Unit = {
+    dom.console.log("Reseting game")
+    Game.save()
+    while(undo()) {}
+    Game.reset()
+  }
 }

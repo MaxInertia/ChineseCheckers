@@ -5,15 +5,15 @@ import org.scalajs.dom
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
-class Position(x: Int, y: Int) {
-  if(!Position.isValid(x, y))
+class Tile(x: Int, y: Int) {
+  if(!Tile.isValid(x, y))
     dom.console.log(s"WHOOPS! Invalid board position created: ($x, $y)")
 
   def X: Int = x
   def Y: Int = y
 }
 
-object Position {
+object Tile {
   def isValid(xPos: Int, yPos: Int): Boolean = {
     val x: Int = math.abs(xPos)
     val y: Int = math.abs(yPos)
@@ -21,7 +21,10 @@ object Position {
     // Pieces not in a spawn location + a few in spawn location
     if( x <= 8 && y <= 4 ) {
       if (x % 2 == y % 2) return true
-      else return false
+      else {
+        dom.console.log(s"x: $x, y: $y")
+        return false
+      }
     }
 
     // Exclusively pieces in a spawn location

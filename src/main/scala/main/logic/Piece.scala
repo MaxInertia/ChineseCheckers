@@ -1,129 +1,72 @@
 package main.logic
 
-import com.outr.pixijs.PIXI
-import main.ui.Display
-import main.ui.Display.BoardInfo
 import org.scalajs.dom
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
-class Piece(sprite: PIXI.Sprite, color: String) {
-  private var position: Position = _
+class Piece(color: String, id: Int) {
+  private var position: Tile = _
 
-  def Sprite: PIXI.Sprite = sprite
-
+  def ID: Int = id
   def Color: String = color
 
-  def Pos: Position = position
-  def setPosition(x: Int, y: Int, add2History: Boolean = true): Boolean = {
-    if(!Position.isValid(x, y)) return false
+  def Pos: Tile = position
+  def setPosition(x: Int, y: Int, remember: Boolean = true): Boolean = {
+    if(!Tile.isValid(x, y)) {
+      dom.console.log(s"piece.setPosition received invalid tile: ($x, $y)")
+      return false
+    }
     val oldPosition = position
-    position = new Position(x, y)
-    if(add2History && oldPosition != null) Game.Current.registerMove(oldPosition, position)
+    position = new Tile(x, y)
+    if(remember && oldPosition != null) Game.Current.registerMove(oldPosition, position)
     true
   }
-
-  def setVisibility(visible: Boolean): Unit = sprite.visible = visible
-  def Visible(): Boolean = sprite.visible
 }
 
 object Piece {
-  def create(texture: PIXI.Texture, color: String, xPos: Int, yPos: Int): (Piece, PIXI.Sprite) = {
 
-    // Calculate coordinates for sprites position on display
-    val xDisplayPos = BoardInfo.Width/2 + BoardInfo.dx * xPos
-    val yDisplayPos = BoardInfo.Height/2 + BoardInfo.dy * yPos
+  // Counter to keep track of the number of pieces created in each color
+  val pc: Array[Int] = Array[Int](0, 0, 0, 0, 0, 0)
+  def numPieces: Int = pc.sum // Same as: pc.fold(0)(_ + _)
 
-    // Create sprite
-    val sprite = new PIXI.Sprite(texture) {
-      anchor.x = 0.5
-      anchor.y = 0.5
-      position.x = xDisplayPos
-      position.y = yDisplayPos
-    }
-    sprite.interactive = true
-    sprite.buttonMode = true
-    sprite.visible = false
-
-    val piece = new Piece(sprite, color)
-    piece.setPosition(xPos, yPos)
-
-    // Action performed when mouse over sprite
-    val onOver = () => {
-      sprite.scale.x = 1.1
-      sprite.scale.y = 1.1
-    }
-    // Action performed when mouse leaves sprite
-    val onOut = () => {
-      sprite.scale.x = 1
-      sprite.scale.y = 1
-    }
-    // Action performed when mouse down over sprite
-    val onDown = () => {
-      sprite.scale.x = 1.2
-      sprite.scale.y = 1.2
-    }
-    // Action performed when mouse up over sprite
-    val onUp = () => {
-      sprite.scale.x = 1.1
-      sprite.scale.y = 1.1
+  // Creates a new piece.
+  // Returns: ID, x position, and y position of the piece as a triple
+  def create(color: String): (Int, Int, Int) = {
+    var xBoard = 0
+    var yBoard = 0
+    color match {
+      case "purple" => // Bottom
+        xBoard = Board.tbPositions(pc(0))._1
+        yBoard = Board.tbPositions(pc(0))._2
+        pc(0) += 1
+      case "blue" => // Top
+        xBoard = Board.tbPositions(pc(1))._1
+        yBoard = -Board.tbPositions(pc(1))._2
+        pc(1) += 1
+      case "yellow" => // Top-Left
+        xBoard = -Board.lrPositions(pc(2))._2
+        yBoard = -Board.lrPositions(pc(2))._1
+        pc(2) += 1
+      case "black" => // Bottom-Left
+        xBoard = -Board.lrPositions(pc(3))._2
+        yBoard = Board.lrPositions(pc(3))._1
+        pc(3) += 1
+      case "red" => // Bottom-Right
+        xBoard = Board.lrPositions(pc(4))._2
+        yBoard = Board.lrPositions(pc(4))._1
+        pc(4) += 1
+      case "green" => // Top-Right
+        xBoard = Board.lrPositions(pc(5))._2
+        yBoard = -Board.lrPositions(pc(5))._1
+        pc(5) += 1
+      case default =>
+        dom.console.log(s"Unkown color: $color")
     }
 
-    sprite.on("mouseover", onOver)
-    sprite.on("mouseout", onOut)
-    sprite.on("mousedown", onDown)
-    sprite.on("mouseup", onUp)
-
-    var data: PIXI.interaction.InteractionData = null
-    var dragging: Boolean = false
-    var ix: Double = 0
-    var iy: Double = 0
-
-    val onDragStart = (event: PIXI.interaction.InteractionEvent) => {
-      //TODO: Only allow dragging piece owned by player
-      //TODO: Only allow dragging on the players turn
-      ix = sprite.x
-      iy = sprite.y
-      data = event.data
-      dragging = true
-    }
-
-    val onDragEnd = () => {
-      if(dragging) {
-        var finalPosition = data.getLocalPosition(Display.stage)
-
-        // Check if final position is valid.
-        val (correctedX, correctedY, bX, bY, ok) =
-          Game.Current.moveValid(piece, ix, iy, finalPosition.x, finalPosition.y)
-        if(ok) {
-          //piece.setPosition(bX, bY)
-          sprite.position.set(correctedX, correctedY)
-        } else {
-          // Restore predrag position
-          dom.console.log("Invalid move attempted!")
-          sprite.x = ix
-          sprite.y = iy
-        }
-
-        dragging = false
-        data = null // set the interaction data to null
-      }
-    }
-
-    val onDragMove = () => {
-      if (dragging) {
-        var newPosition = data.getLocalPosition(Display.stage)
-        sprite.x = newPosition.x
-        sprite.y = newPosition.y
-      }
-    }
-
-    sprite.on("pointerdown", onDragStart)
-      .on("pointerup", onDragEnd)
-      .on("pointermove", onDragMove)
-      .on("pointermoveout", onDragEnd)
-
-    (piece, sprite)
+    val piece = new Piece(color, numPieces - 1)
+    piece.setPosition(xBoard, yBoard)
+    Game.Current.board.addPiece(piece)
+    (piece.ID, xBoard, yBoard)
   }
 }

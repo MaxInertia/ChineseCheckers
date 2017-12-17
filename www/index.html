@@ -41,42 +41,44 @@
             <h2>Players</h2>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(0)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(0)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Blue</span>
             </div>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(1)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(1)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Green</span>
             </div>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(2)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(2)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Red</span>
             </div>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(3)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(3)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Purple</span>
             </div>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(4)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(4)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Black</span>
             </div>
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="checkbox" onchange="IFMain.activatePlayer(5)" aria-label="Checkbox for following text input">
+                <input type="checkbox" onchange="ChCheckers.activatePlayer(5)" aria-label="Checkbox for following text input">
               </span>
               <span class="input-group-addon">Yellow</span>
             </div>
+            <br>
             <h2>Commands</h2>
-            <button type="button" class="btn btn-warning" onclick="IFMain.undo()">Undo</button>
+            <button type="button" class="btn btn-warning" onclick="ChCheckers.undo()">Undo</button>
+            <button type="button" class="btn btn-danger" onclick="ChCheckers.reset()">Reset</button>
         </div>
     </div>
 </div>
@@ -87,7 +89,7 @@
         type = "canvas"
     }
     PIXI.utils.sayHello(type);
-    IFMain.makeGame();
+    ChCheckers.makeGame();
 </script>
 
 <script type="text/javascript">
@@ -96,6 +98,6 @@
     }
 </script>
 
-<!--<div>Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>-->
+<div>Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 </body>
 </html>
