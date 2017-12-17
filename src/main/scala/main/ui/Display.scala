@@ -4,6 +4,7 @@ import com.outr.pixijs.PIXI.{Sprite, SystemRenderer, Texture}
 import com.outr.pixijs.{PIXI, RendererOptions}
 import main.logic.{Board, Game, Piece}
 import org.scalajs.dom
+import org.scalajs.dom.raw.UIEvent
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
@@ -25,7 +26,7 @@ object Display {
   object BoardInfo {
     val iwidth = 2000 // Image width
     val iheight = 2294 // Image height
-    val scale = 0.36
+    var scale = 1.00
     def Width: Double = iwidth * scale
     def Height: Double = iheight * scale
     // Horizontal distance between neighboring board positions
@@ -38,13 +39,17 @@ object Display {
   var renderer: SystemRenderer = _
   var stage: PIXI.Container = _
 
-  def init(game: Game/*, container: dom.Element*/): Unit = {
+  def init(game: Game): Unit = {
+    // 90% of this ratio seems to fit nicely in the window, 100% forces vertical scrolling
+    BoardInfo.scale = 0.9 * dom.window.innerHeight / BoardInfo.iheight
+
     // 1. Renderer and Stage
     renderer = PIXI.autoDetectRenderer(new RendererOptions {
       height = BoardInfo.Height.toInt
       width = BoardInfo.Width.toInt
       antialias = true
       resolution = 1.0
+      autoResize = true
       backgroundColor = 0xffffff
     })
     dom.document.getElementById("boardContainer").appendChild(renderer.view)
@@ -60,9 +65,32 @@ object Display {
       y = BoardInfo.Height/2
     }
     dom.console.log(s"Board Scale: ${BoardInfo.scale}")
-    //dom.console.log(s"Board Scale: ${BoardInfo.scale}")
     board.rotation = math.Pi/3
     stage.addChild(board)
+
+    // Resize stage & contents when window changes size
+    dom.window.onresize = (event: UIEvent) =>{
+      // Update BoardInfo scale
+      BoardInfo.scale = 0.9 * dom.window.innerHeight / BoardInfo.iheight
+      if(0.9 * dom.window.innerWidth / BoardInfo.iwidth < BoardInfo.scale) {
+        BoardInfo.scale = dom.window.innerWidth / BoardInfo.iwidth
+      }
+      dom.console.log(s"Changed scale to ${BoardInfo.scale}")
+      // Update renderer size
+      renderer.resize(BoardInfo.Width.toInt, BoardInfo.Height.toInt)
+      // Update board size and position
+      val oldWidth = BoardInfo.Width
+      val oldHeight = BoardInfo.Height
+      board.scale.x = BoardInfo.scale
+      board.scale.y = BoardInfo.scale
+      board.x = BoardInfo.Width/2
+      board.y = BoardInfo.Height/2
+      // Update piece positions
+      for(p <- Game.Current.pc) {
+        p.Sprite.x = BoardInfo.Width/2 + p.Pos.X * BoardInfo.dx
+        p.Sprite.y = BoardInfo.Height/2 + p.Pos.Y * BoardInfo.dy
+      }
+    }
 
     // 3. Pieces
     makePlayerPieces("purple", game)
@@ -83,7 +111,6 @@ object Display {
   def makePlayerPieces(color: String, game: Game): Unit = {
     dom.console.log("Making all the "+ color +" pieces!")
     val texture = PIXI.Texture.fromImage(R + color + Size)
-    //var pieces: Array[Piece] = Array[Piece]()
 
     for (i <- 0 until 10) {
       var xBoard = 0 // Internal x-coord of board position
@@ -113,7 +140,6 @@ object Display {
 
       // TODO: Separate ui & game logic (No PIXI in logic package)
       val (newPiece, sprite) = Piece.create(texture, color, xBoard, yBoard)
-      //pieces = pieces ++: Array(newPiece)
       Game.Current.pc = Game.Current.pc ++: Array(newPiece)
       stage.addChild(sprite)
     }
