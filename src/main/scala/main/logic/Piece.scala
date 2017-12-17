@@ -11,15 +11,21 @@ import org.scalajs.dom
 class Piece(sprite: PIXI.Sprite, color: String) {
   private var position: Position = _
 
+  def Sprite: PIXI.Sprite = sprite
+
   def Color: String = color
+
   def Pos: Position = position
-  def setPosition(x: Int, y: Int): Boolean = {
+  def setPosition(x: Int, y: Int, add2History: Boolean = true): Boolean = {
     if(!Position.isValid(x, y)) return false
     val oldPosition = position
     position = new Position(x, y)
-    if(oldPosition != null) Game.Current.registerMove(oldPosition, position)
+    if(add2History && oldPosition != null) Game.Current.registerMove(oldPosition, position)
     true
   }
+
+  def setVisibility(visible: Boolean): Unit = sprite.visible = visible
+  def Visible(): Boolean = sprite.visible
 }
 
 object Piece {
@@ -38,6 +44,7 @@ object Piece {
     }
     sprite.interactive = true
     sprite.buttonMode = true
+    sprite.visible = false
 
     val piece = new Piece(sprite, color)
     piece.setPosition(xPos, yPos)
@@ -87,8 +94,10 @@ object Piece {
         var finalPosition = data.getLocalPosition(Display.stage)
 
         // Check if final position is valid.
-        val (correctedX, correctedY, ok) = Game.Current.moveValid(piece, ix, iy, finalPosition.x, finalPosition.y)
+        val (correctedX, correctedY, bX, bY, ok) =
+          Game.Current.moveValid(piece, ix, iy, finalPosition.x, finalPosition.y)
         if(ok) {
+          //piece.setPosition(bX, bY)
           sprite.position.set(correctedX, correctedY)
         } else {
           // Restore predrag position

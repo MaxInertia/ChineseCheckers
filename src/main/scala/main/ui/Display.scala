@@ -4,7 +4,6 @@ import com.outr.pixijs.PIXI.{Sprite, SystemRenderer, Texture}
 import com.outr.pixijs.{PIXI, RendererOptions}
 import main.logic.{Board, Game, Piece}
 import org.scalajs.dom
-import org.scalajs.dom.{document, window}
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
@@ -26,7 +25,7 @@ object Display {
   object BoardInfo {
     val iwidth = 2000 // Image width
     val iheight = 2294 // Image height
-    val scale = 0.3
+    val scale = 0.36
     def Width: Double = iwidth * scale
     def Height: Double = iheight * scale
     // Horizontal distance between neighboring board positions
@@ -39,7 +38,7 @@ object Display {
   var renderer: SystemRenderer = _
   var stage: PIXI.Container = _
 
-  def init(game: Game): Unit = {
+  def init(game: Game/*, container: dom.Element*/): Unit = {
     // 1. Renderer and Stage
     renderer = PIXI.autoDetectRenderer(new RendererOptions {
       height = BoardInfo.Height.toInt
@@ -48,7 +47,7 @@ object Display {
       resolution = 1.0
       backgroundColor = 0xffffff
     })
-    document.body.appendChild(renderer.view)
+    dom.document.getElementById("boardContainer").appendChild(renderer.view)
     stage = new PIXI.Container()
 
     // 2. Board
@@ -60,22 +59,22 @@ object Display {
       x = BoardInfo.Width/2
       y = BoardInfo.Height/2
     }
-    dom.console.log(s"Piv: ${board.pivot.x} ${board.pivot.y}")
-    dom.console.log(s"Pos: ${board.position.x} ${board.position.y}")
-    //board.rotation = math.Pi/3
+    dom.console.log(s"Board Scale: ${BoardInfo.scale}")
+    //dom.console.log(s"Board Scale: ${BoardInfo.scale}")
+    board.rotation = math.Pi/3
     stage.addChild(board)
 
     // 3. Pieces
+    makePlayerPieces("purple", game)
+    makePlayerPieces("blue", game)
     makePlayerPieces("red", game)
     makePlayerPieces("green", game)
-    makePlayerPieces("blue", game)
     makePlayerPieces("yellow", game)
-    makePlayerPieces("purple", game)
     makePlayerPieces("black", game)
 
     // 4. Start animation loop
     def animate(): Unit = {
-      window.requestAnimationFrame((_: Double) => animate())
+      dom.window.requestAnimationFrame((_: Double) => animate())
       renderer.render(stage)
     }
     animate()
@@ -84,28 +83,28 @@ object Display {
   def makePlayerPieces(color: String, game: Game): Unit = {
     dom.console.log("Making all the "+ color +" pieces!")
     val texture = PIXI.Texture.fromImage(R + color + Size)
-    var pieces: Array[Piece] = Array()
+    //var pieces: Array[Piece] = Array[Piece]()
 
     for (i <- 0 until 10) {
       var xBoard = 0 // Internal x-coord of board position
       var yBoard = 0 // Internal y-coord of board position
       color match {
-        case "black" => // Top
+        case "purple" => // Top
           xBoard = Board.tbPositions(i)._1
           yBoard = Board.tbPositions(i)._2
-        case "green" => // Bottom
+        case "blue" => // Bottom
           xBoard = Board.tbPositions(i)._1
           yBoard = -Board.tbPositions(i)._2
-        case "blue" => // Top-Left
-          xBoard = -Board.lrPositions(i)._2
-          yBoard = -Board.lrPositions(i)._1
         case "yellow" => // Top-Left
           xBoard = -Board.lrPositions(i)._2
-          yBoard = Board.lrPositions(i)._1
-        case "purple" => // Top-Left
-          xBoard = Board.lrPositions(i)._2
+          yBoard = -Board.lrPositions(i)._1
+        case "black" => // Top-Left
+          xBoard = -Board.lrPositions(i)._2
           yBoard = Board.lrPositions(i)._1
         case "red" => // Top-Left
+          xBoard = Board.lrPositions(i)._2
+          yBoard = Board.lrPositions(i)._1
+        case "green" => // Top-Left
           xBoard = Board.lrPositions(i)._2
           yBoard = -Board.lrPositions(i)._1
         case default =>
@@ -114,11 +113,12 @@ object Display {
 
       // TODO: Separate ui & game logic (No PIXI in logic package)
       val (newPiece, sprite) = Piece.create(texture, color, xBoard, yBoard)
-      pieces = pieces ++: Array(newPiece)
+      //pieces = pieces ++: Array(newPiece)
+      Game.Current.pc = Game.Current.pc ++: Array(newPiece)
       stage.addChild(sprite)
     }
 
-    game.pieces.+(color -> pieces)
+    //Game.Current.pieces.+(color -> pieces)
   }
 
   def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
