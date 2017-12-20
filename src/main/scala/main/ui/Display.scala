@@ -44,8 +44,11 @@ object Display {
     def get(i: Int): Sprite =
       if(i >= sprites.length) null else sprites(i)
 
-    def changeVisibility(i: Int): Unit =
-      if(i < sprites.length) sprites(i).visible = !sprites(i).visible
+    def changeVisibility(i: Int): Boolean = {
+      require (i < sprites.length)
+      sprites(i).visible = !sprites(i).visible
+      sprites(i).visible
+    }
   }
 
   // PIXI Stuff
@@ -156,8 +159,8 @@ object Display {
   }
 
   // Only required for bots
-  /*def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
-    if(distance == 1 || distance == 2)
+  def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
+    if(distance != 1 && distance != 2)
       dom.console.log(s"WHOOPS! Attempting move with invalid distance: $distance")
     if(direction < 0 || direction > 5)
       dom.console.log(s"WHOOPS! Attempting move with invalid direction: $direction")
@@ -184,6 +187,6 @@ object Display {
         sprite.x += Dimensions.dx * distance
         sprite.y -= Dimensions.dy * distance
     }
-  }*/
+  }
 
 }

@@ -4,6 +4,7 @@ import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import main.logic.{Game, Piece}
+import main.logic.players.{Human, Player, SimpleBot}
 import main.ui.{Display, Position}
 import main.ui.Display.{Sprites, makePlayerPieces}
 import org.scalajs.dom
@@ -39,14 +40,38 @@ object Main {
         color = "yellow"
     }
 
+    var activated = false
     for(i <- 0 to 59) {
       val (p, found) = Game.Current.board.getPiece(i)
       if(found) {
-        if(p.Color == color) Sprites.changeVisibility(i)
+        if(p.Color == color) activated = Sprites.changeVisibility(i)
       } else {
         dom.console.log(s"Piece #$i was not found!")
       }
     }
+
+    if(activated) {
+      dom.console.log("Adding a player")
+      //TODO: Take name as argument
+      Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
+    } else { // Remove that player
+      dom.console.log("Removing a player")
+      var players: Array[Player] = Array()
+      for (p <- Game.Current.players) {
+        if (p.Color != color) {
+          players = players :+ p
+        }
+      }
+      Game.Current.players = players
+    }
+
+    dom.console.log(s"There are now ${Game.Current.players.length} players")
+  }
+
+  @JSExport
+  def endTurn(): Unit = {
+    dom.console.log("You ended your turn")
+    Game.Current.loop()
   }
 
   // Undoes the previous move. Can be called until all

@@ -20,18 +20,18 @@ object Tile {
 
     // Pieces not in a spawn location + a few in spawn location
     if( x <= 8 && y <= 4 ) {
-      if (x % 2 == y % 2) return true
-      else {
-        dom.console.log(s"x: $x, y: $y")
-        return false
-      }
+      if (x % 2 == y % 2) return true else return false
     }
 
     // Exclusively pieces in a spawn location
     for(p <- Board.tbPositions)
-      if(x == math.abs(p._1) && y == math.abs(p._2)) return true
+      if(x == math.abs(p._1) && y == math.abs(p._2)) {
+        return true
+      }
     for(p <- Board.lrPositions)
-      if(x == math.abs(p._2) && y == math.abs(p._1)) return true
+      if(x == math.abs(p._2) && y == math.abs(p._1)) {
+        return true
+      }
     false
   }
 }
