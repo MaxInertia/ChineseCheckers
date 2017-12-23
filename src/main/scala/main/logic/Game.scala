@@ -1,6 +1,5 @@
 package main.logic
 
-import main.logic.hex.{Grid, Tile}
 import main.logic.players.Player
 import main.ui.Position
 import org.scalajs.dom
@@ -10,7 +9,7 @@ import org.scalajs.dom
   */
 class Game {
   // Index of active Player
-  var activePI: Int = 0
+  var activePI: Int = -1
   // Array of players (2 - 6)
   var players: Array[Player] = Array()
   // The game board. Contains game pieces.
@@ -18,19 +17,12 @@ class Game {
   // A record of each move in the game
   var history: Array[Game#Move] = Array()
 
-  // Start game loop
-  def loop(): Unit = {
+  def switchTurns(): Unit = {
+    // Increment active player index
+    activePI = (activePI + 1) % players.length
     // Notify player that it is their turn
-    //dom.console.log(s"Player $activePI now active")
+    dom.console.log(s"Player $activePI now active")
     players(activePI).notifyOfTurn()
-    //dom.console.log(s"Player $activePI now inactive")
-
-    activePI = activePI + 1
-    if(activePI == players.length) {
-      activePI = 0
-      return
-    }
-    //loop()
   }
 
   /** Called when a player attempts making a move.
@@ -48,6 +40,7 @@ class Game {
     false
   }
 
+  /** Called when a player requests a move to be undone. */
   def requestUndo(): (Int, Int, Int) = {
     val len = Game.Current.history.length
     if(len == 0) {
@@ -74,6 +67,7 @@ class Game {
     (p.ID, ix, iy)
   }
 
+  /** Returns an array of all possible moves for the piece specified by id */
   def requestPossibleMoves(id: Int): Array[(Int, Int)] = {
     val (piece, found) = board.getPiece(id)
     if(!found) {
@@ -86,8 +80,10 @@ class Game {
     MoveGenerator.getMoves(board.tiles(piece.X, piece.Y), board)
   }
 
+  /** Returns an array of all game pieces in play */
   def getAllPieces: Array[Piece] = board.pieces
 
+  /** Saves the specified move in the game history */
   private def registerMove(ix: Int, iy: Int, fx: Int, fy: Int): Unit = {
     // TODO: Replace dom.console logs with outr/scribe logs
     dom.console.log(s"Move: ($ix, $iy)" + s" -> ($fx, $fy)")
@@ -126,14 +122,14 @@ object Game {
     }
   }
 
-  def save(): Unit = previous = previous :+ current.history.clone()
+  /*def save(): Unit = previous = previous :+ current.history.clone()
 
   def reset(): Unit = {
     val newGame = new Game()
     newGame.board = current.board
     newGame.players = current.players
     current = newGame
-  }
+  }*/
 
   //TODO: Implement replay()
 }

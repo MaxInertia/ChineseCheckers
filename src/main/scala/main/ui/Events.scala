@@ -2,6 +2,7 @@ package main.ui
 
 import com.outr.pixijs.PIXI
 import main.logic.Game
+import org.scalajs.dom
 
 object Events {
   val defaultTileOpacity = 1
@@ -80,7 +81,7 @@ object Events {
   }
 
   def setupTileListeners(graphics: PIXI.Graphics, x: Double, y: Double, xM: Int, yM :Int): Unit = {
-    graphics.interactive = false
+    graphics.interactive = true
     graphics.buttonMode = false
     graphics.alpha = 1
 
@@ -96,11 +97,13 @@ object Events {
         SelectedPiece.sprite.y = y
 
         val (piece, found) = Game.Current.board.getPiece(SelectedPiece.id)
+        var moveOccurred = false
         if(found) {
-          val moveOccurred = Game.Current.requestMove(piece.X, piece.Y, xM, yM)
+           moveOccurred = Game.Current.requestMove(piece.X, piece.Y, xM, yM)
         }
 
         SelectedPiece.clear()
+        if(moveOccurred) Game.Current.switchTurns()
       }
     }
 

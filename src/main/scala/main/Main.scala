@@ -4,7 +4,7 @@ import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import main.logic.{Game, Piece}
-import main.logic.players.{Human, Player}
+import main.logic.players.{Human, SimpleBlueBot}
 import main.ui.Display
 import org.scalajs.dom
 
@@ -59,8 +59,15 @@ object Main {
       // Create Player that has ownership over pieces of the current color
       dom.console.log("Adding a player")
       //TODO: Take name as argument
-      Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
+      if(color == "blue") {
+        Game.Current.players = Game.Current.players :+ new SimpleBlueBot()
+      } else {
+        Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
+      }
     }
+
+    // Trigger first turn
+    Game.Current.switchTurns()
 
     dom.console.log("start() ending")
   }
