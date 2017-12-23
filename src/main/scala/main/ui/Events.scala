@@ -75,7 +75,8 @@ object Events {
 
     sprite.on("mouseover", onOver)
     sprite.on("mouseout", onOut)
-    sprite.on("click", onClick)
+    sprite.on("pointertap", onClick)
+
   }
 
   def setupTileListeners(graphics: PIXI.Graphics, x: Double, y: Double, xM: Int, yM :Int): Unit = {
@@ -105,6 +106,6 @@ object Events {
 
     //graphics.on("mouseover", mouseOver)
     //graphics.on("mouseout", mouseOut)
-    graphics.on("click", onClick)
+    graphics.on("pointertap", onClick)
   }
 }
