@@ -1,10 +1,8 @@
 package main.ui
 
-import com.outr.pixijs.PIXI.{Sprite, SystemRenderer, Texture}
 import com.outr.pixijs.{PIXI, RendererOptions}
-import main.logic.{Game, Piece}
+import main.logic.Game
 import org.scalajs.dom
-import org.scalajs.dom.raw.UIEvent
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
@@ -36,23 +34,31 @@ object Display {
   }
 
   object Sprites {
-    var sprites: Array[Sprite] = Array()
+    var sprites: Array[PIXI.Sprite] = Array()
 
-    def add(newSprite: Sprite): Unit =
+    def add(newSprite: PIXI.Sprite): Unit =
       sprites = sprites :+ newSprite
 
-    def get(i: Int): Sprite =
+    def get(i: Int): PIXI.Sprite =
       if(i >= sprites.length) null else sprites(i)
 
-    def changeVisibility(i: Int): Boolean = {
+    /*def changeVisibility(i: Int): Boolean = {
       require (i < sprites.length)
       sprites(i).visible = !sprites(i).visible
       sprites(i).visible
+    }*/
+
+    // Moves a sprite
+    def move(pid: Int, x: Int, y: Int): Unit = {
+      val (displayX, displayY) = Position.of(x, y)
+      Sprites.get(pid).position.set(displayX, displayY)
     }
   }
 
+  var board: Board = _
+
   // PIXI Stuff
-  var renderer: SystemRenderer = _
+  var renderer: PIXI.SystemRenderer = _
   var stage: PIXI.Container = _
 
   def init(game: Game): Unit = {
@@ -71,21 +77,12 @@ object Display {
     dom.document.getElementById("boardContainer").appendChild(renderer.view)
     stage = new PIXI.Container()
 
-    // 2. Board
-    val board = new PIXI.Sprite(PIXI.Texture.fromImage(R + "board.png")) {
-      anchor.x = 0.5
-      anchor.y = 0.5
-      scale.x = Dimensions.scale
-      scale.y = Dimensions.scale
-      x = Dimensions.Width/2
-      y = Dimensions.Height/2
-    }
-    dom.console.log(s"Board Scale: ${Dimensions.scale}")
-    board.rotation = math.Pi/3
-    stage.addChild(board)
+    // 2. Create board
+    board = new Board(Dimensions.Width/2, Dimensions.Height/2)
+    board.drawBoard()
 
     // Resize stage & contents when window changes size
-    dom.window.onresize = (event: UIEvent) =>{
+    /*dom.window.onresize = (event: UIEvent) =>{
       // Update Dimensions scale
       Dimensions.scale = 0.9 * dom.window.innerHeight / Dimensions.iheight
       if(0.9 * dom.window.innerWidth / Dimensions.iwidth < Dimensions.scale) {
@@ -102,24 +99,17 @@ object Display {
       board.x = Dimensions.Width/2
       board.y = Dimensions.Height/2
       // Update piece positions
-      for(i <- 0 to Sprites.sprites.length) {
-        val (p, found) = Game.Current.board.getPiece(i) // Too many dots?!
-        if(found) {
-          val s = Sprites.get(i)
-          val tmp = Position.of(p.Pos.X, p.Pos.Y)
-          s.x = tmp._1
-          s.y = tmp._2
-        }
+      val pieces = game.getAllPieces
+      for(p <- pieces) {
+        val s = Sprites.get(p.ID)
+        val tmp = Position.of(p.X, p.Y)
+        s.x = tmp._1
+        s.y = tmp._2
       }
-    }
+    }*/
 
     // 3. Pieces
-    makePlayerPieces("purple", game)
-    makePlayerPieces("blue", game)
-    makePlayerPieces("red", game)
-    makePlayerPieces("green", game)
-    makePlayerPieces("yellow", game)
-    makePlayerPieces("black", game)
+    //createPieceSprites(game)
 
     // 4. Start animation loop
     def animate(): Unit = {
@@ -129,63 +119,31 @@ object Display {
     animate()
   }
 
-  def makePlayerPieces(color: String, game: Game): Unit = {
-    //dom.console.log("Making all the "+ color +" pieces!")
-    val texture = PIXI.Texture.fromImage(R + color + Size)
+  def createPieceSprites(game: Game): Unit = {
+    val textures: Map[String, PIXI.Texture] = Map(
+      "purple" -> PIXI.Texture.fromImage(R + "purple" + Size),
+      "blue" -> PIXI.Texture.fromImage(R + "blue" + Size),
+      "red" -> PIXI.Texture.fromImage(R + "red" + Size),
+      "green" -> PIXI.Texture.fromImage(R + "green" + Size),
+      "yellow" -> PIXI.Texture.fromImage(R + "yellow" + Size),
+      "black" -> PIXI.Texture.fromImage(R + "black" + Size),
+    )
 
-    for(i <- 0 to 9) {
-      val (id, xPos, yPos) = Piece.create(color)
-
-      // Calculate coordinates for sprites position on display
-      val xDisplayPos = Dimensions.Width / 2 + Dimensions.dx * xPos
-      val yDisplayPos = Dimensions.Height / 2 + Dimensions.dy * yPos
-
-      //dom.console.log(s"Adding Sprite to ($xDisplayPos, $yDisplayPos)")
+    val pieces = game.getAllPieces
+    for(p <- pieces) {
+      val (xDisplayPos, yDisplayPos) = Position.of(p.X, p.Y)
 
       // Create sprite
-      val sprite = new PIXI.Sprite(texture) {
+      val sprite = new PIXI.Sprite(textures(p.Color)) {
         anchor.x = 0.5
         anchor.y = 0.5
         position.x = xDisplayPos
         position.y = yDisplayPos
       }
-      sprite.interactive = true
-      sprite.buttonMode = true
-      sprite.visible = false
-      Events.setupListeners(sprite, id)
+
+      Events.setupSpriteListeners(sprite, p.ID)
       stage.addChild(sprite)
       Sprites.add(sprite)
-    }
-  }
-
-  // Only required for bots
-  def move(sprite: PIXI.Sprite, direction: Int, distance: Int): Unit = {
-    if(distance != 1 && distance != 2)
-      dom.console.log(s"WHOOPS! Attempting move with invalid distance: $distance")
-    if(direction < 0 || direction > 5)
-      dom.console.log(s"WHOOPS! Attempting move with invalid direction: $direction")
-    direction match {
-      case 0 => // Right (+, 0)
-        sprite.x += Dimensions.dx * 2 * distance
-
-      case 1 => // Down-Right (+, +)
-        sprite.x += Dimensions.dx * distance
-        sprite.y += Dimensions.dy * distance
-
-      case 2 => // Down-Left (-, +)
-        sprite.x -= Dimensions.dx * distance
-        sprite.y += Dimensions.dy * distance
-
-      case 3 => // Left  (-, 0)
-        sprite.x -= Dimensions.dx * 2 * distance
-
-      case 4 => // Up-Left (-, -)
-        sprite.x -= Dimensions.dx * distance
-        sprite.y -= Dimensions.dy * distance
-
-      case 5 => // Up-Right (+, -)
-        sprite.x += Dimensions.dx * distance
-        sprite.y -= Dimensions.dy * distance
     }
   }
 

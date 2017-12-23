@@ -4,9 +4,8 @@ import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import main.logic.{Game, Piece}
-import main.logic.players.{Human, Player, SimpleBot}
-import main.ui.{Display, Position}
-import main.ui.Display.{Sprites, makePlayerPieces}
+import main.logic.players.{Human, Player}
+import main.ui.Display
 import org.scalajs.dom
 
 /**
@@ -14,6 +13,14 @@ import org.scalajs.dom
   */
 @JSExportTopLevel("ChCheckers")
 object Main {
+
+  var activeColors: Array[String] = Array()
+  var blue: Boolean = false
+  var green: Boolean = false
+  var red: Boolean = false
+  var purple: Boolean = false
+  var black: Boolean = false
+  var yellow: Boolean = false
 
   @JSExport
   def makeGame(): Unit = {
@@ -24,54 +31,38 @@ object Main {
 
   @JSExport
   def activatePlayer(dir: Int): Unit = {
-    var color: String = null
     dir match {
-      case 0 =>
-        color = "blue"
-      case 1 =>
-        color = "green"
-      case 2 =>
-        color = "red"
-      case 3 =>
-        color = "purple"
-      case 4 =>
-        color = "black"
-      case 5 =>
-        color = "yellow"
+      case 0 => blue = !blue
+      case 1 => green = !green
+      case 2 => red = !red
+      case 3 => purple = !purple
+      case 4 => black = !black
+      case 5 => yellow = !yellow
     }
-
-    var activated = false
-    for(i <- 0 to 59) {
-      val (p, found) = Game.Current.board.getPiece(i)
-      if(found) {
-        if(p.Color == color) activated = Sprites.changeVisibility(i)
-      } else {
-        dom.console.log(s"Piece #$i was not found!")
-      }
-    }
-
-    if(activated) {
-      dom.console.log("Adding a player")
-      //TODO: Take name as argument
-      Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
-    } else { // Remove that player
-      dom.console.log("Removing a player")
-      var players: Array[Player] = Array()
-      for (p <- Game.Current.players) {
-        if (p.Color != color) {
-          players = players :+ p
-        }
-      }
-      Game.Current.players = players
-    }
-
-    dom.console.log(s"There are now ${Game.Current.players.length} players")
   }
 
   @JSExport
-  def endTurn(): Unit = {
-    dom.console.log("You ended your turn")
-    Game.Current.loop()
+  def start(): Unit = {
+    dom.console.log("start() called")
+
+    if(blue) activeColors = activeColors :+ "blue"
+    if(green) activeColors = activeColors :+ "green"
+    if(red) activeColors = activeColors :+ "red"
+    if(purple) activeColors = activeColors :+ "purple"
+    if(black) activeColors = activeColors :+ "black"
+    if(yellow) activeColors = activeColors :+ "yellow"
+
+    Game.start(activeColors)
+    Display.createPieceSprites(Game.Current)
+
+    for(color <- activeColors) {
+      // Create Player that has ownership over pieces of the current color
+      dom.console.log("Adding a player")
+      //TODO: Take name as argument
+      Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
+    }
+
+    dom.console.log("start() ending")
   }
 
   // Undoes the previous move. Can be called until all
@@ -79,37 +70,21 @@ object Main {
   // Returns true when a move is undone.
   @JSExport
   def undo(): Boolean = {
-    val len = Game.Current.history.length
-    if(len == 0) {
-      dom.console.log("No move to undo")
-      return false
+    val (pid, x, y) = Game.Current.requestUndo()
+    if(pid != -1) {
+      // undo request accepted
+      Display.Sprites.move(pid, x, y)
+      true
     }
-    val lastMove = Game.Current.history(len-1)
-    val ix = lastMove.initialTile.X
-    val iy = lastMove.initialTile.Y
-    val fx = lastMove.finalTile.X
-    val fy = lastMove.finalTile.Y
-
-    val (p, found) = Game.Current.board.getPieceAt(fx, fy)
-    if(!found) {
-      dom.console.log("Undo failed!")
-      return false
-    }
-
-    Game.Current.history = Game.Current.history.dropRight(1)
-    p.setPosition(ix, iy, remember = false)
-    val (px, py) = Position.of(ix, iy)
-    Sprites.get(p.ID).position.set(px, py)
-    dom.console.log(s"Undo: ($fx, $fy) -> ($ix, $iy)")
-    true
+    false
   }
 
   // Restores game to it's initial state.
-  @JSExport
+  /*@JSExport
   def reset(): Unit = {
     dom.console.log("Reseting game")
     Game.save()
     while(undo()) {}
     Game.reset()
-  }
+  }*/
 }

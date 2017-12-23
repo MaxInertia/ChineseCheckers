@@ -2,119 +2,109 @@ package main.ui
 
 import com.outr.pixijs.PIXI
 import main.logic.Game
-import main.ui.Display.Dimensions
-import org.scalajs.dom
 
 object Events {
-  def setupListeners(sprite: PIXI.Sprite, id: Int): Unit = {
+  val defaultTileOpacity = 1
+  val selectedTileOpacity = 0.3
+
+  object SelectedPiece {
+    var sprite: PIXI.Sprite = _
+    var id: Int = -1
+    var possibleMoves: Array[(Int, Int)] = _
+
+    // Deselects the currently selected piece.
+    // All highlighted tiles are restored to their defaults.
+    def clear(): Unit = {
+      if(SelectedPiece.possibleMoves != null) {
+        for (pm <- SelectedPiece.possibleMoves) {
+          val hex = Display.board.tiles(pm)
+          hex.Tile.buttonMode = false
+          hex.Tile.interactive = false
+          hex.Tile.alpha = defaultTileOpacity
+        }
+      }
+
+      SelectedPiece.possibleMoves = null
+      SelectedPiece.sprite = null
+      SelectedPiece.id = -1
+    }
+
+    def exists(): Boolean = sprite != null && id != -1
+  }
+
+  def setupSpriteListeners(sprite: PIXI.Sprite, id: Int): Unit = {
+    sprite.interactive = true
+    sprite.buttonMode = true
+    sprite.visible = true
+
     // Action performed when mouse over sprite
     val onOver = () => {
       sprite.scale.x = 1.1
       sprite.scale.y = 1.1
     }
+
     // Action performed when mouse leaves sprite
     val onOut = () => {
       sprite.scale.x = 1
       sprite.scale.y = 1
     }
+
     // Action performed when mouse down over sprite
-    val onDown = () => {
-      sprite.scale.x = 1.2
-      sprite.scale.y = 1.2
-    }
-    // Action performed when mouse up over sprite
-    val onUp = () => {
-      sprite.scale.x = 1.1
-      sprite.scale.y = 1.1
+    val onClick = () => {
+      // Clear the previous selection
+
+      if(SelectedPiece.sprite == sprite) {
+        SelectedPiece.clear()
+      } else {
+        SelectedPiece.clear()
+        // Select this piece and display moves
+        SelectedPiece.sprite = sprite
+        SelectedPiece.id = id
+        SelectedPiece.possibleMoves = Game.Current.requestPossibleMoves(id)
+        if (SelectedPiece.possibleMoves != null) {
+          for (pm <- SelectedPiece.possibleMoves) {
+            //dom.console.log(s"\t(${pm._1}, ${pm._2})")
+            val hex = Display.board.tiles(pm)
+            hex.Tile.buttonMode = true
+            hex.Tile.interactive = true
+            hex.Tile.alpha = selectedTileOpacity
+          }
+        }
+      }
     }
 
     sprite.on("mouseover", onOver)
     sprite.on("mouseout", onOut)
-    sprite.on("mousedown", onDown)
-    sprite.on("mouseup", onUp)
-
-    var data: PIXI.interaction.InteractionData = null
-    var dragging: Boolean = false
-    var ix: Double = 0
-    var iy: Double = 0
-
-    val onDragStart = (event: PIXI.interaction.InteractionEvent) => {
-      //TODO: Only allow dragging piece owned by player
-      //TODO: Only allow dragging on the players turn
-      ix = sprite.x
-      iy = sprite.y
-      data = event.data
-      dragging = true
-    }
-
-    val onDragEnd = () => {
-      if(dragging) {
-        var finalPosition = data.getLocalPosition(Display.stage)
-        // Check if final position is valid.
-        val (position, ok) = moveAppearsValid(ix, iy, finalPosition.x, finalPosition.y)
-        if(ok) {
-          // Move piece to new tile
-          val (piece, foundPiece) = Game.Current.board.getPiece(id)
-          var moveOk = false
-          if(foundPiece) moveOk = piece.setPosition(position.boardX, position.boardY)
-          if(moveOk) {
-            sprite.position.set(position.X, position.Y)
-          } else {
-            // Restore pre-drag position
-            dom.console.log("Invalid move attempted!")
-            sprite.x = ix
-            sprite.y = iy
-          }
-        } else {
-          // Restore pre-drag position
-          dom.console.log("Invalid move attempted!")
-          sprite.x = ix
-          sprite.y = iy
-        }
-
-        dragging = false
-        data = null // set the interaction data to null
-      }
-    }
-
-    val onDragMove = () => {
-      if (dragging) {
-        var newPosition = data.getLocalPosition(Display.stage)
-        sprite.x = newPosition.x
-        sprite.y = newPosition.y
-      }
-    }
-
-    sprite.on("pointerdown", onDragStart)
-      .on("pointerup", onDragEnd)
-      .on("pointermove", onDragMove)
-      .on("pointermoveout", onDragEnd)
+    sprite.on("click", onClick)
   }
 
-  // Checks if the player dragged the piece to a valid board location.
-  // Return: If the move is not valid (null, false) is returned.
-  // If valid, (display.Position, true) is returned.
-  //    position returned is the final position, centered on the tile moved to
-  def moveAppearsValid(ix: Double, iy: Double, fx: Double, fy: Double): (Position, Boolean) = {
-    val deltaX = ix - fx
-    val deltaY = iy - fy
+  def setupTileListeners(graphics: PIXI.Graphics, x: Double, y: Double, xM: Int, yM :Int): Unit = {
+    graphics.interactive = false
+    graphics.buttonMode = false
+    graphics.alpha = 1
 
-    // Doesn't check move against other piece locations
-    // TODO: Confirm pieces not blocking and that pieces exist in jump moves
+    val mouseOver = (event: PIXI.interaction.InteractionEvent) =>
+      event.currentTarget.alpha = selectedTileOpacity
 
-    if (math.abs(deltaX) > Dimensions.dx * 2 * 2.5 || math.abs(deltaY) > Dimensions.dy * 2.5)
-      return (null, false) // Attempted to move distance > 2
+    val mouseOut = (event: PIXI.interaction.InteractionEvent) =>
+      event.currentTarget.alpha = defaultTileOpacity
 
-    val position = new Position()
-    position.set(fx, fy)
-    position.centerOnTile()
-    if (math.abs(ix - position.X) < 0.9 * Display.Dimensions.dx)
-      return (null, false) // Attempted to move directly up or down
+    val onClick = () => {
+      if(SelectedPiece.exists()) {
+        SelectedPiece.sprite.x = x
+        SelectedPiece.sprite.y = y
 
-    val xyRatio = math.abs(iy - position.Y) / math.abs(ix - position.X)
-    if (xyRatio > 0 && xyRatio < 1.5)
-      return (null, false) // Attempted to move in 'L'
+        val (piece, found) = Game.Current.board.getPiece(SelectedPiece.id)
+        if(found) {
+          val moveOccurred = Game.Current.requestMove(piece.X, piece.Y, xM, yM)
+        }
 
-    (position, true) // Looks good!
+        SelectedPiece.clear()
+      }
+    }
+
+    //graphics.on("mouseover", mouseOver)
+    //graphics.on("mouseout", mouseOut)
+    graphics.on("click", onClick)
   }
 }
