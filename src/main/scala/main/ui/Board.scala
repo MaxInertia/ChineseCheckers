@@ -81,18 +81,26 @@ class Board(centerX: Double, centerY: Double) {
         xM += mDir.X
         yM += mDir.Y
         // Draw the hexagon
-        if(counter < 6 && counter > skip) drawHexagon(xD, yD, xM, yM)
+        if(counter < 6 && counter > skip) drawHexagon(xD, yD, xM, yM, i)
         counter -= 1
       }
     }
   }
 
   // Draw hexagon
-  private def drawHexagon(xD: Double, yD: Double, xM: Int, yM: Int): Unit = {
+  private def drawHexagon(xD: Double, yD: Double, xM: Int, yM: Int, spawn: Int = -1): Unit = {
     val graphics = new PIXI.Graphics()
     // Set fill and line color
-    graphics.beginFill(0xdddddd)
     graphics.lineStyle(2, 0x000000, 1)
+    spawn match{
+      case 0 => graphics.beginFill(0xffaaaa) // red
+      case 1 => graphics.beginFill(0xeeccff) // purple
+      case 2 => graphics.beginFill(0xaaaaaa) // black
+      case 3 => graphics.beginFill(0xffffb4) // yellow
+      case 4 => graphics.beginFill(0xaaccff) // blue
+      case 5 => graphics.beginFill(0xbbff99) // green
+      case -1 => graphics.beginFill(0xdddddd) // default
+    }
 
     graphics.moveTo(xD, yD - hexHeight/2) // Top of the hexagon
     graphics.lineTo(xD+ hexWidth/2, yD - hmso2)
