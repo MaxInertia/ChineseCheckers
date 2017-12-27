@@ -9,14 +9,7 @@ import org.scalajs.dom
 class Board extends Grid {
   private[logic] var pieces: Array[Piece] = Array[Piece]()
   tiles = Grid.createTiles()
-  dom.console.log(s"Grid created with ${tiles.size} tiles.")
-
-  def addPiece(piece: Piece, x: Int, y: Int): Unit = {
-    val tile: Tile = tiles((x, y))
-    if(tile.content != null) print("Warning: Added piece to occupied location.")
-    tile.content = piece
-    pieces = pieces :+ piece
-  }
+  //dom.console.log(s"Grid created with ${tiles.size} tiles.")
 
   // Get piece via unique identifier
   def getPiece(id: Int): (Piece, Boolean) = {
@@ -32,11 +25,11 @@ class Board extends Grid {
 
   def movePiece(piece: Piece, x: Int, y: Int): Boolean = {
     if(piece == null) {
-      dom.console.log("Error: Initial position of requested move is empty")
+      //dom.console.log("Error: Initial position of requested move is empty")
       return false
     }
     if(!Grid.isValidTile(x, y)) {
-      dom.console.log(s"Error: requested move is to an invalid position: ($x, $y)")
+      //dom.console.log(s"Error: requested move is to an invalid position: ($x, $y)")
       return false
     }
 
@@ -50,12 +43,30 @@ class Board extends Grid {
     true
   }
 
-  private val pc: Array[Int] = Array[Int](0, 0, 0, 0, 0, 0)
-  def numPieces: Int = pc.sum
+  def DeepClone(): Board = {
+    val clonedBoard: Board = Board()
+    for(p <- pieces) {
+      val cp = new Piece(p.Color, p.ID)
+      cp.x = p.x
+      cp.y = p.y
+      clonedBoard.pieces = clonedBoard.pieces :+ cp
+    }
+    for(((x, y), t) <- tiles) {
+      val ct = new Tile(t.X, t.Y)
+      if(t.isOccupied) {
+        ct.content = clonedBoard.pieces(t.content.ID)
+        clonedBoard.tiles += ((x, y) -> ct)
+      }
+    }
+    clonedBoard
+  }
 
   def createPieceSet(color: String): Unit = for(i <- 0 to 9) createPiece(color)
 
-  def createPiece(color: String) {
+  private val pc: Array[Int] = Array[Int](0, 0, 0, 0, 0, 0)
+  private def numPieces: Int = pc.sum
+
+  private def createPiece(color: String) {
     var xBoard = 0
     var yBoard = 0
     color match {
@@ -89,37 +100,26 @@ class Board extends Grid {
         dom.console.log(s"Unkown color: $color")
     }
 
-    dom.console.log(s"Creating and adding $color piece to board at ($xBoard, $yBoard)")
+    //dom.console.log(s"Creating and adding $color piece to board at ($xBoard, $yBoard)")
     val piece = new Piece(color, numPieces - 1)
     piece.x = xBoard
     piece.y = yBoard
     addPiece(piece, xBoard, yBoard)
   }
+
+  private def addPiece(piece: Piece, x: Int, y: Int): Unit = {
+    val tile: Tile = tiles((x, y))
+    if(tile.content != null) //print("Warning: Added piece to occupied location.")
+    tile.content = piece
+    pieces = pieces :+ piece
+  }
+
 }
 
 object Board {
-  // Counter to keep track of the number of pieces created in each color
-
   // Creates a new piece.
   // Returns: ID, x position, and y position of the piece as a triple
   def apply(): Board = {
     new Board()
-    /*for(i <- 0 to 59) {
-      if(i<10) {
-        createPiece("purple")
-      } else if(i<20) {
-        createPiece("blue")
-      } else if(i<30) {
-        createPiece("yellow")
-      } else if(i<40) {
-        createPiece("black")
-      } else if(i<50) {
-        createPiece("red")
-      } else {
-        createPiece("green")
-      }
-    }*/
   }
-
-
 }
