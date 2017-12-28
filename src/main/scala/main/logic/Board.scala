@@ -109,7 +109,7 @@ class Board extends Grid {
 
   private def addPiece(piece: Piece, x: Int, y: Int): Unit = {
     val tile: Tile = tiles((x, y))
-    if(tile.content != null) //print("Warning: Added piece to occupied location.")
+    //if(tile.content != null) dom.console.log("Warning: Added piece to occupied location.")
     tile.content = piece
     pieces = pieces :+ piece
   }
