@@ -61,43 +61,43 @@ class Board extends Grid {
     clonedBoard
   }
 
-  def createPieceSet(color: String): Unit = for(i <- 0 to 9) createPiece(color)
+  def createPieceSet(color: Color): Unit = for(i <- 0 to 9) createPiece(color)
 
   private val pc: Array[Int] = Array[Int](0, 0, 0, 0, 0, 0)
   private def numPieces: Int = pc.sum
 
-  private def createPiece(color: String) {
+  private def createPiece(color: Color) {
     var xBoard = 0
     var yBoard = 0
     color match {
-      case "purple" => // Bottom
+      case Purple => // Bottom
         xBoard = -Grid.pSpawnPositions(pc(0))._1
         yBoard = Grid.pSpawnPositions(pc(0))._2
         pc(0) += 1
-      case "blue" => // Top
+      case Blue => // Top
         xBoard = Grid.pSpawnPositions(pc(1))._1
         yBoard = -Grid.pSpawnPositions(pc(1))._2
         pc(1) += 1
 
-      case "black" => // Bottom-Left
+      case Black => // Bottom-Left
         xBoard = -Grid.pSpawnPositions(pc(2))._2
         yBoard = Grid.pSpawnPositions(pc(2))._1
         pc(2) += 1
-      case "green" => // Top-Right
+      case Green => // Top-Right
         xBoard = Grid.pSpawnPositions(pc(3))._2
         yBoard = -Grid.pSpawnPositions(pc(3))._1
         pc(3) += 1
 
-      case "yellow" => // Top-Left
+      case Yellow => // Top-Left
         xBoard = -Grid.sSpawnPositions(pc(4))._1
         yBoard = -Grid.sSpawnPositions(pc(4))._2
         pc(4) += 1
-      case "red" => // Bottom-Right
+      case Red => // Bottom-Right
         xBoard = Grid.sSpawnPositions(pc(5))._1
         yBoard = Grid.sSpawnPositions(pc(5))._2
         pc(5) += 1
       case default =>
-        dom.console.log(s"Unkown color: $color")
+        dom.console.log(s"Unkown color: ${color.toString}")
     }
 
     //dom.console.log(s"Creating and adding $color piece to board at ($xBoard, $yBoard)")

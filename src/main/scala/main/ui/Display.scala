@@ -134,7 +134,7 @@ object Display {
       val (xDisplayPos, yDisplayPos) = Position.of(p.X, p.Y)
 
       // Create sprite
-      val sprite = new PIXI.Sprite(textures(p.Color)) {
+      val sprite = new PIXI.Sprite(textures(p.Color.toString)) {
         anchor.x = 0.5
         anchor.y = 0.5
         position.x = xDisplayPos

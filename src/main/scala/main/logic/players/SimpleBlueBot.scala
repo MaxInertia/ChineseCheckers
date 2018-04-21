@@ -1,6 +1,6 @@
 package main.logic.players
 
-import main.logic.{Game, Piece}
+import main.logic.{Blue, Game, Piece}
 import main.ui.Display
 import org.scalajs.dom
 
@@ -14,7 +14,7 @@ import org.scalajs.dom
   *
   * Created by Dorian Thiessen on 2017-12-23.
   */
-class SimpleBlueBot() extends Player("BLUE BOT", "blue") {
+class SimpleBlueBot() extends Player("BLUE BOT", Blue) {
 
   def notifyOfTurn(): Unit = {
     dom.console.log(s"It is now $Name's turn")

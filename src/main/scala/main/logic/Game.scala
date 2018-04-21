@@ -103,7 +103,7 @@ object Game {
   // Previous games, saved as a sequence of moves.
   private var previous: Array[Array[Game#Move]] = Array() //TODO: Save to file
 
-  private var current: Game = _
+  private[logic] var current: Game = _
   def Current: Game = current
 
   def init(): Game = {
@@ -116,7 +116,7 @@ object Game {
     current
   }
 
-  def start(colors: Array[String]): Unit = {
+  def start(colors: Array[Color]): Unit = {
     for(c <- colors) {
       Current.board.createPieceSet(c)
     }

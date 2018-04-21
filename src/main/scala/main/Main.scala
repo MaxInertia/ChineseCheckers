@@ -3,7 +3,7 @@ package main
 import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import main.logic.{Game, Piece}
+import main.logic._
 import main.logic.players.{Human, SimpleBlueBot}
 import main.ui.Display
 import org.scalajs.dom
@@ -14,7 +14,7 @@ import org.scalajs.dom
 @JSExportTopLevel("ChCheckers")
 object Main {
 
-  var activeColors: Array[String] = Array()
+  var activeColors: Array[Color] = Array()
   var blue: Boolean = false
   var green: Boolean = false
   var red: Boolean = false
@@ -45,12 +45,12 @@ object Main {
   def start(): Unit = {
     dom.console.log("start() called")
 
-    if(blue) activeColors = activeColors :+ "blue"
-    if(green) activeColors = activeColors :+ "green"
-    if(red) activeColors = activeColors :+ "red"
-    if(purple) activeColors = activeColors :+ "purple"
-    if(black) activeColors = activeColors :+ "black"
-    if(yellow) activeColors = activeColors :+ "yellow"
+    if(blue) activeColors = activeColors :+ Blue
+    if(green) activeColors = activeColors :+ Green
+    if(red) activeColors = activeColors :+ Red
+    if(purple) activeColors = activeColors :+ Purple
+    if(black) activeColors = activeColors :+ Black
+    if(yellow) activeColors = activeColors :+ Yellow
 
     Game.start(activeColors)
     Display.createPieceSprites(Game.Current)
@@ -59,7 +59,7 @@ object Main {
       // Create Player that has ownership over pieces of the current color
       dom.console.log("Adding a player")
       //TODO: Take name as argument
-      if(color == "blue") {
+      if(color == Blue) {
         Game.Current.players = Game.Current.players :+ new SimpleBlueBot()
       } else {
         Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
