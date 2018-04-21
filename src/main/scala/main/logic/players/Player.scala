@@ -1,6 +1,6 @@
 package main.logic.players
 
-import main.logic.Color
+import main.logic.Colors.Color
 
 abstract class Player(name: String, color: Color) {
   def Name: String = name

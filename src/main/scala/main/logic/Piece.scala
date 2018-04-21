@@ -1,5 +1,6 @@
 package main.logic
 
+import main.logic.Colors.Color
 import main.logic.hex.{Grid, Tile}
 import org.scalajs.dom
 

@@ -1,5 +1,6 @@
 package main.logic
 
+import main.logic.Colors.Color
 import main.logic.players.Player
 import main.ui.Position
 import org.scalajs.dom

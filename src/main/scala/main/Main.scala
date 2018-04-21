@@ -1,5 +1,6 @@
 package main
 
+import main.logic.Colors._
 import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
