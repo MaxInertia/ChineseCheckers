@@ -1,30 +1,19 @@
 package main.ui
 
 import com.outr.pixijs.{PIXI, RendererOptions}
-import main.logic.Game
+import main.logic.ChineseCheckers
+import main.logic.board.Colors._
 import org.scalajs.dom
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
 object Display {
-
-  // Resource constants
-  val R: String = "images/"
-  val Colors: Array[String] = Array(
-    "blue",
-    "green",
-    "yellow",
-    "red",
-    "purple",
-    "black")
-  val Size = "32.png"
-
   // View-specific details of the displayed board.
   object Dimensions {
-    val iwidth = 2000 // Image width
-    val iheight = 2294 // Image height
-    var scale = 1.00
+    val iwidth: Int = 2000 // Image width
+    val iheight: Int = 2294 // Image height
+    var scale: Double = 1.00
     def Width: Double = iwidth * scale
     def Height: Double = iheight * scale
     // Horizontal distance between neighboring board positions
@@ -61,7 +50,7 @@ object Display {
   var renderer: PIXI.SystemRenderer = _
   var stage: PIXI.Container = _
 
-  def init(game: Game): Unit = {
+  def init(): Unit = {
     // 90% of this ratio seems to fit nicely in the window, 100% forces vertical scrolling
     Dimensions.scale = 0.9 * dom.window.innerHeight / Dimensions.iheight
 
@@ -81,37 +70,7 @@ object Display {
     board = new Board(Dimensions.Width/2, Dimensions.Height/2)
     board.drawBoard()
 
-    // Resize stage & contents when window changes size
-    /*dom.window.onresize = (event: UIEvent) =>{
-      // Update Dimensions scale
-      Dimensions.scale = 0.9 * dom.window.innerHeight / Dimensions.iheight
-      if(0.9 * dom.window.innerWidth / Dimensions.iwidth < Dimensions.scale) {
-        Dimensions.scale = dom.window.innerWidth / Dimensions.iwidth
-      }
-      dom.console.log(s"Changed scale to ${Dimensions.scale}")
-      // Update renderer size
-      renderer.resize(Dimensions.Width.toInt, Dimensions.Height.toInt)
-      // Update board size and position
-      val oldWidth = Dimensions.Width
-      val oldHeight = Dimensions.Height
-      board.scale.x = Dimensions.scale
-      board.scale.y = Dimensions.scale
-      board.x = Dimensions.Width/2
-      board.y = Dimensions.Height/2
-      // Update piece positions
-      val pieces = game.getAllPieces
-      for(p <- pieces) {
-        val s = Sprites.get(p.ID)
-        val tmp = Position.of(p.X, p.Y)
-        s.x = tmp._1
-        s.y = tmp._2
-      }
-    }*/
-
-    // 3. Pieces
-    //createPieceSprites(game)
-
-    // 4. Start animation loop
+    // 3. Start animation loop
     def animate(): Unit = {
       dom.window.requestAnimationFrame((_: Double) => animate())
       renderer.render(stage)
@@ -119,29 +78,29 @@ object Display {
     animate()
   }
 
-  def createPieceSprites(game: Game): Unit = {
-    val textures: Map[String, PIXI.Texture] = Map(
-      "purple" -> PIXI.Texture.fromImage(R + "purple" + Size),
-      "blue" -> PIXI.Texture.fromImage(R + "blue" + Size),
-      "red" -> PIXI.Texture.fromImage(R + "red" + Size),
-      "green" -> PIXI.Texture.fromImage(R + "green" + Size),
-      "yellow" -> PIXI.Texture.fromImage(R + "yellow" + Size),
-      "black" -> PIXI.Texture.fromImage(R + "black" + Size),
+  def createPieceSprites(): Unit = {
+    val textures: Map[Color, PIXI.Texture] = Map(
+      Purple -> PIXI.Texture.fromImage(Purple.imageFile),
+      Blue -> PIXI.Texture.fromImage(Blue.imageFile),
+      Red -> PIXI.Texture.fromImage(Red.imageFile),
+      Green -> PIXI.Texture.fromImage(Green.imageFile),
+      Yellow -> PIXI.Texture.fromImage(Yellow.imageFile),
+      Black -> PIXI.Texture.fromImage(Black.imageFile)
     )
 
-    val pieces = game.getAllPieces
+    val pieces = ChineseCheckers.getAllPieces
     for(p <- pieces) {
       val (xDisplayPos, yDisplayPos) = Position.of(p.X, p.Y)
 
       // Create sprite
-      val sprite = new PIXI.Sprite(textures(p.Color.toString)) {
+      val sprite = new PIXI.Sprite(textures(p.color)) {
         anchor.x = 0.5
         anchor.y = 0.5
         position.x = xDisplayPos
         position.y = yDisplayPos
       }
 
-      Events.setupSpriteListeners(sprite, p.ID)
+      Events.setupSpriteListeners(sprite, p.id)
       stage.addChild(sprite)
       Sprites.add(sprite)
     }

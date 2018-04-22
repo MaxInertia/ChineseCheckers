@@ -1,6 +1,8 @@
 package main.logic.players
 
-import main.logic.{Colors, Game, Piece}
+import main.logic.board.Pieces.Piece
+import main.logic.ChineseCheckers
+import main.logic.board.Colors
 import main.ui.Display
 import org.scalajs.dom
 
@@ -19,15 +21,15 @@ class SimpleBlueBot() extends Player("BLUE BOT", Colors.Blue) {
   def notifyOfTurn(): Unit = {
     dom.console.log(s"It is now $Name's turn")
 
-    val pieces = Game.Current.getAllPieces
+    val pieces = ChineseCheckers.getAllPieces
 
     var largestDrop = 0 // Largest drop in y-value of any move
     var piece: Piece = null
     var move: (Int, Int) = null
 
     // For all pieces owned by this player
-    for(p <- pieces if p.Color == Color) {
-      val moves = Game.Current.requestPossibleMoves(p.ID)
+    for(p <- pieces if p.color == Color) {
+      val moves = ChineseCheckers.requestPossibleMoves(p.id)
       for(m <- moves) {
         //dom.console.log(s"Drop for this move: ${m._2 - p.Y}")
         if(m._2 - p.Y > largestDrop) {
@@ -43,15 +45,15 @@ class SimpleBlueBot() extends Player("BLUE BOT", Colors.Blue) {
       return
     }
 
-    val moveOk = Game.Current.requestMove(piece.X, piece.Y, move._1, move._2)
+    val moveOk = ChineseCheckers.requestMove(piece.X, piece.Y, move._1, move._2)
     if(!moveOk) {
       dom.console.log(s"$Name selected a move which was rejected...")
     } else {
-      Display.Sprites.move(piece.ID, move._1, move._2)
+      Display.Sprites.move(piece.id, move._1, move._2)
     }
 
     // Switch turns, regardless of whether it could move or not.
-    Game.Current.switchTurns()
+    ChineseCheckers.switchTurns()
   }
 
 

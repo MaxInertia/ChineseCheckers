@@ -1,6 +1,6 @@
 package main
 
-import main.logic.Colors._
+import main.logic.board.Colors._
 import org.scalajs.dom.console
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -26,20 +26,18 @@ object Main {
   @JSExport
   def makeGame(): Unit = {
     console.log("ChCheckers.makeGame called")
-    val game = Game.init()
-    Display.init(game)
+    Display.init()
   }
 
+  // TODO: Create setup screen where user selects the number of players, colors, etc
   @JSExport
-  def activatePlayer(dir: Int): Unit = {
-    dir match {
-      case 0 => blue = !blue
-      case 1 => green = !green
-      case 2 => red = !red
-      case 3 => purple = !purple
-      case 4 => black = !black
-      case 5 => yellow = !yellow
-    }
+  def activatePlayer(dir: Int): Unit = dir match {
+    case 0 => blue = !blue
+    case 1 => green = !green
+    case 2 => red = !red
+    case 3 => purple = !purple
+    case 4 => black = !black
+    case 5 => yellow = !yellow
   }
 
   @JSExport
@@ -53,22 +51,22 @@ object Main {
     if(black) activeColors = activeColors :+ Black
     if(yellow) activeColors = activeColors :+ Yellow
 
-    Game.start(activeColors)
-    Display.createPieceSprites(Game.Current)
+    ChineseCheckers.start(activeColors)
+    Display.createPieceSprites()
 
     for(color <- activeColors) {
       // Create Player that has ownership over pieces of the current color
       dom.console.log("Adding a player")
       //TODO: Take name as argument
       if(color == Blue) {
-        Game.Current.players = Game.Current.players :+ new SimpleBlueBot()
+        ChineseCheckers.players = ChineseCheckers.players :+ new SimpleBlueBot()
       } else {
-        Game.Current.players = Game.Current.players :+ new Human("HUMAN", color)
+        ChineseCheckers.players = ChineseCheckers.players :+ new Human("HUMAN", color)
       }
     }
 
     // Trigger first turn
-    Game.Current.switchTurns()
+    ChineseCheckers.switchTurns()
 
     dom.console.log("start() ending")
   }
@@ -78,7 +76,7 @@ object Main {
   // Returns true when a move is undone.
   @JSExport
   def undo(): Boolean = {
-    val (pid, x, y) = Game.Current.requestUndo()
+    val (pid, x, y) = ChineseCheckers.requestUndo()
     if(pid != -1) {
       // undo request accepted
       Display.Sprites.move(pid, x, y)
@@ -86,13 +84,4 @@ object Main {
     }
     false
   }
-
-  // Restores game to it's initial state.
-  /*@JSExport
-  def reset(): Unit = {
-    dom.console.log("Reseting game")
-    Game.save()
-    while(undo()) {}
-    Game.reset()
-  }*/
 }

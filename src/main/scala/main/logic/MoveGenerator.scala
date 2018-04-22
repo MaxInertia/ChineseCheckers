@@ -1,6 +1,6 @@
 package main.logic
 
-import main.logic.hex.Tile
+import main.logic.board.Tile
 
 /**
   * Generates list of possible moves.

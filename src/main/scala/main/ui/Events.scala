@@ -1,7 +1,7 @@
 package main.ui
 
 import com.outr.pixijs.PIXI
-import main.logic.Game
+import main.logic.ChineseCheckers
 import org.scalajs.dom
 
 object Events {
@@ -61,7 +61,7 @@ object Events {
         // Select this piece and display moves
         SelectedPiece.sprite = sprite
         SelectedPiece.id = id
-        SelectedPiece.possibleMoves = Game.Current.requestPossibleMoves(id)
+        SelectedPiece.possibleMoves = ChineseCheckers.requestPossibleMoves(id)
         if (SelectedPiece.possibleMoves != null) {
           for (pm <- SelectedPiece.possibleMoves) {
             //dom.console.log(s"\t(${pm._1}, ${pm._2})")
@@ -96,14 +96,14 @@ object Events {
         SelectedPiece.sprite.x = x
         SelectedPiece.sprite.y = y
 
-        val (piece, found) = Game.Current.board.getPiece(SelectedPiece.id)
+        val (piece, found) = ChineseCheckers.board.getPiece(SelectedPiece.id)
         var moveOccurred = false
         if(found) {
-           moveOccurred = Game.Current.requestMove(piece.X, piece.Y, xM, yM)
+           moveOccurred = ChineseCheckers.requestMove(piece.X, piece.Y, xM, yM)
         }
 
         SelectedPiece.clear()
-        if(moveOccurred) Game.Current.switchTurns()
+        if(moveOccurred) ChineseCheckers.switchTurns()
       }
     }
 

@@ -1,7 +1,7 @@
 package main.ui
 
 import com.outr.pixijs.PIXI
-import main.logic.hex.Grid
+import main.logic.board.Grid
 import main.ui.Display.stage
 
 /**

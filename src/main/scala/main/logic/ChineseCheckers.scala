@@ -1,6 +1,7 @@
 package main.logic
 
-import main.logic.Colors.Color
+import main.logic.board.Colors.Color
+import main.logic.board.Pieces.Piece
 import main.logic.players.Player
 import main.ui.Position
 import org.scalajs.dom
@@ -8,15 +9,15 @@ import org.scalajs.dom
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
-class Game {
+object ChineseCheckers {
   // Index of active Player
   var activePI: Int = -1
   // Array of players (2 - 6)
   var players: Array[Player] = Array()
   // The game board. Contains game pieces.
-  var board: Board = Board()
+  lazy val board: Board = Board()
   // A record of each move in the game
-  var history: Array[Game#Move] = Array()
+  var history: Array[Move] = Array()
 
   def switchTurns(): Unit = {
     // Increment active player index
@@ -43,29 +44,29 @@ class Game {
 
   /** Called when a player requests a move to be undone. */
   def requestUndo(): (Int, Int, Int) = {
-    val len = Game.Current.history.length
+    val len = ChineseCheckers.history.length
     if(len == 0) {
       dom.console.log("No move to undo")
       return (-1, -1, -1)
     }
 
-    val lastMove = Game.Current.history(len-1)
+    val lastMove = ChineseCheckers.history(len-1)
     val ix = lastMove.iX
     val iy = lastMove.iY
     val fx = lastMove.fX
     val fy = lastMove.fY
 
-    val p = Game.Current.board.getPieceAt(fx, fy)
+    val p = ChineseCheckers.board.getPieceAt(fx, fy)
     if(p == null) {
       dom.console.log("Undo failed! Piece missing...")
       return (-1, -1, -1)
     }
 
-    Game.Current.history = Game.Current.history.dropRight(1)
+    ChineseCheckers.history = ChineseCheckers.history.dropRight(1)
     board.movePiece(p, ix, iy)
     val (px, py) = Position.of(ix, iy)
     dom.console.log(s"Undo: ($fx, $fy) -> ($ix, $iy)")
-    (p.ID, ix, iy)
+    (p.id, ix, iy)
   }
 
   /** Returns an array of all possible moves for the piece specified by id */
@@ -98,39 +99,12 @@ class Game {
     def fX: Int = fx
     def fY: Int = fy
   }
-}
 
-object Game {
-  // Previous games, saved as a sequence of moves.
-  private var previous: Array[Array[Game#Move]] = Array() //TODO: Save to file
-
-  private[logic] var current: Game = _
-  def Current: Game = current
-
-  def init(): Game = {
-    dom.console.log("Game.init() called")
-    if(current == null) {
-      current = new Game()
-    }
-    //dom.console.log(s"Piece count: ${current.getAllPieces.length}")
-    dom.console.log("Game.init() ending")
-    current
-  }
+  // --------------------------------
 
   def start(colors: Array[Color]): Unit = {
     for(c <- colors) {
-      Current.board.createPieceSet(c)
+      board.createPieceSet(c)
     }
   }
-
-  /*def save(): Unit = previous = previous :+ current.history.clone()
-
-  def reset(): Unit = {
-    val newGame = new Game()
-    newGame.board = current.board
-    newGame.players = current.players
-    current = newGame
-  }*/
-
-  //TODO: Implement replay()
 }

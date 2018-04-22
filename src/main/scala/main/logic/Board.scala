@@ -1,14 +1,16 @@
 package main.logic
 
-import main.logic.Colors._
-import main.logic.hex.{Grid, Tile}
+import main.logic.board.Colors._
+import main.logic.board.{Grid, Tile}
+import main.logic.board.Pieces.Piece
+import main.logic.hex.Tile
 import org.scalajs.dom
 
 /**
   * Created by Dorian Thiessen on 2017-12-15.
   */
 class Board extends Grid {
-  private[logic] var pieces: Array[Piece] = Array[Piece]()
+  private[logic] var pieces: Array[Piece] = ??? //createPieceSet(c) // TODO: Factor out pieces from the board.
   tiles = Grid.createTiles()
   //dom.console.log(s"Grid created with ${tiles.size} tiles.")
 
@@ -47,7 +49,7 @@ class Board extends Grid {
   def DeepClone(): Board = {
     val clonedBoard: Board = Board()
     for(p <- pieces) {
-      val cp = new Piece(p.Color, p.ID)
+      val cp = Piece(p.color, p.id)
       cp.x = p.x
       cp.y = p.y
       clonedBoard.pieces = clonedBoard.pieces :+ cp
@@ -55,7 +57,7 @@ class Board extends Grid {
     for(((x, y), t) <- tiles) {
       val ct = new Tile(t.X, t.Y)
       if(t.isOccupied) {
-        ct.content = clonedBoard.pieces(t.content.ID)
+        ct.content = clonedBoard.pieces(t.content.id)
         clonedBoard.tiles += ((x, y) -> ct)
       }
     }
@@ -102,7 +104,7 @@ class Board extends Grid {
     }
 
     //dom.console.log(s"Creating and adding $color piece to board at ($xBoard, $yBoard)")
-    val piece = new Piece(color, numPieces - 1)
+    val piece = Piece(color, numPieces - 1)
     piece.x = xBoard
     piece.y = yBoard
     addPiece(piece, xBoard, yBoard)

@@ -3,8 +3,8 @@ package main.logic.hex
 /**
   * Created by Dorian Thiessen on 2017-12-21.
   */
-import main.logic.hex.Grid
 
+import main.logic.board.Grid
 import org.scalatest.FunSpec
 
 class GridTests extends FunSpec {

@@ -1,6 +1,6 @@
-package main.logic.hex
+package main.logic.board
 
-import main.logic.Piece
+import main.logic.board.Pieces.Piece
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 

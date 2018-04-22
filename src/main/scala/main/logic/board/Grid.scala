@@ -2,7 +2,9 @@
 * Inspiration for this package, as well as much of it's contents,
 * comes from here: https://www.redblobgames.com/grids/hexagons/
 */
-package main.logic.hex
+package main.logic.board
+
+
 
 /**
   * A grid composed of hexagonal tiles.
@@ -13,7 +15,7 @@ package main.logic.hex
   *
   * Created by Dorian Thiessen on 2017-12-20.
   */
-class Grid {
+private class BoardGrid {
   var tiles: Map[(Int, Int), Tile] = _
 
   /** Returns an array of tuples (direction, tile).
@@ -61,7 +63,7 @@ object Grid {
     Tile(1, -2), Tile(2, -1))
 
   def apply(): Grid = {
-    var grid = new Grid()
+    val grid = new Grid()
     grid.tiles = createTiles()
     grid
   }

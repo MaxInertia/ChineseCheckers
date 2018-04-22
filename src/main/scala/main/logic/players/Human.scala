@@ -1,6 +1,6 @@
 package main.logic.players
 
-import main.logic.Colors.Color
+import main.logic.board.Colors.Color
 import org.scalajs.dom
 
 class Human(name: String, color: Color) extends Player(name, color) {
